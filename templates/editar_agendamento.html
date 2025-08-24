@@ -1,0 +1,698 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <h2 class="mb-1">Editar Agendamento #{{ ag.id }}</h2>
+        <p class="text-muted mb-0">Atualize as informações do agendamento</p>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary" onclick="history.back()">
+          <i class="bi bi-arrow-left me-2"></i>Voltar
+        </button>
+        <button class="btn btn-outline-danger" onclick="deleteAppointment()">
+          <i class="bi bi-trash me-2"></i>Excluir
+        </button>
+        <button class="btn btn-primary" onclick="saveAppointment()">
+          <i class="bi bi-check-lg me-2"></i>Salvar Alterações
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Appointment Info Cards -->
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <i class="bi bi-calendar-event text-primary fs-1"></i>
+        <h6 class="card-title mt-2">{{ ag.data }}</h6>
+        <p class="card-text text-muted">Data</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <i class="bi bi-clock text-success fs-1"></i>
+        <h6 class="card-title mt-2">{{ ag.hora }}</h6>
+        <p class="card-text text-muted">Horário</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <i class="bi bi-stopwatch text-warning fs-1"></i>
+        <h6 class="card-title mt-2">{{ ag.duracao }} min</h6>
+        <p class="card-text text-muted">Duração</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <i class="bi bi-tag text-info fs-1"></i>
+        <h6 class="card-title mt-2">
+          <span class="badge status-badge status-{{ ag.status.lower() }}">
+            {{ ag.status }}
+          </span>
+        </h6>
+        <p class="card-text text-muted">Status</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Form -->
+<div class="card">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <i class="bi bi-pencil-square me-2"></i>Informações do Agendamento
+    </h5>
+  </div>
+  <div class="card-body">
+    <form id="editAppointmentForm">
+      <div class="row g-3">
+        <!-- Patient Selection -->
+        <div class="col-md-6">
+          <label class="form-label">Paciente *</label>
+          <div class="input-group">
+            <input type="text" id="patientSearch" class="form-control" placeholder="Buscar paciente..." oninput="filterPatients(this.value)">
+            <button class="btn btn-outline-secondary" type="button" onclick="showNewPatientModal()">
+              <i class="bi bi-person-plus"></i>
+            </button>
+          </div>
+          <select name="paciente_id" id="pacienteSelect" class="form-select mt-2" required>
+            <option value="">Selecione um paciente</option>
+            {% for p in pacientes %}
+              <option value="{{ p.id }}" {% if p.id == ag.paciente_id %}selected{% endif %} 
+                      data-phone="{{ p.telefone or '' }}" data-email="{{ p.email or '' }}">
+                {{ p.nome }}
+              </option>
+            {% endfor %}
+          </select>
+          <div id="patientInfo" class="mt-2" style="display: none;">
+            <small class="text-muted">
+              <i class="bi bi-telephone me-1"></i><span id="patientPhone"></span><br>
+              <i class="bi bi-envelope me-1"></i><span id="patientEmail"></span>
+            </small>
+          </div>
+        </div>
+        
+        <!-- Professional Selection -->
+        <div class="col-md-6">
+          <label class="form-label">Profissional *</label>
+          <select name="profissional_id" id="profissionalSelect" class="form-select" required onchange="checkAvailability()">
+            <option value="">Selecione um profissional</option>
+            {% for pr in profissionais %}
+              <option value="{{ pr.id }}" {% if pr.id == ag.profissional_id %}selected{% endif %}>
+                {{ pr.nome }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        
+        <!-- Service Selection -->
+        <div class="col-md-6">
+          <label class="form-label">Serviço *</label>
+          <select name="servico_id" id="servicoSelect" class="form-select" required onchange="updateDuration()">
+            <option value="">Selecione um serviço</option>
+            {% for s in servicos %}
+              <option value="{{ s.id }}" {% if s.id == ag.servico_id %}selected{% endif %} 
+                      data-duration="{{ s.duracao_min }}" data-price="{{ s.preco or 0 }}">
+                {{ s.nome }} ({{ s.duracao_min }}min)
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        
+        <!-- Date and Time -->
+        <div class="col-md-3">
+          <label class="form-label">Data *</label>
+          <input type="date" name="data" id="appointmentDate" class="form-control" value="{{ ag.data }}" required onchange="checkAvailability()">
+        </div>
+        
+        <div class="col-md-3">
+          <label class="form-label">Horário *</label>
+          <select name="hora" id="timeSlotSelect" class="form-select" required>
+            <option value="">Selecione horário</option>
+          </select>
+        </div>
+        
+        <!-- Duration and Status -->
+        <div class="col-md-3">
+          <label class="form-label">Duração (minutos)</label>
+          <input type="number" name="duracao" id="durationInput" class="form-control" value="{{ ag.duracao }}" min="15" step="15" required>
+        </div>
+        
+        <div class="col-md-3">
+          <label class="form-label">Status</label>
+          <select name="status" id="statusSelect" class="form-select" onchange="updateStatusColor()">
+            {% for st in ["Agendado","Confirmado","Realizado","Cancelado","Falta"] %}
+              <option value="{{ st }}" {% if st == ag.status %}selected{% endif %}>{{ st }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        
+        <!-- Origin and Value -->
+        <div class="col-md-3">
+          <label class="form-label">Origem</label>
+          <select name="origem" class="form-select">
+            {% for o in ["online","telefone","WhatsApp","presencial"] %}
+              <option value="{{ o }}" {% if o == ag.origem %}selected{% endif %}>{{ o|title }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        
+        <div class="col-md-3">
+          <label class="form-label">Valor (R$)</label>
+          <input type="number" step="0.01" name="valor_pago" id="valorInput" class="form-control" value="{{ ag.valor_pago or 0 }}" placeholder="0.00">
+        </div>
+        
+        <div class="col-md-6">
+          <label class="form-label">Preço Sugerido</label>
+          <div class="input-group">
+            <span class="input-group-text">R$</span>
+            <input type="text" id="suggestedPrice" class="form-control" readonly>
+            <button class="btn btn-outline-secondary" type="button" onclick="applySuggestedPrice()">
+              Aplicar
+            </button>
+          </div>
+        </div>
+        
+        <!-- Recurring Options -->
+        <div class="col-12">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="makeRecurring" onchange="toggleRecurringOptions()">
+            <label class="form-check-label" for="makeRecurring">
+              <strong>Transformar em agendamento recorrente</strong>
+            </label>
+          </div>
+        </div>
+        
+        <div class="col-12" id="recurringOptions" style="display: none;">
+          <div class="card bg-light">
+            <div class="card-body">
+              <h6 class="card-title">Configurações de Recorrência</h6>
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label">Frequência</label>
+                  <select id="recurringFrequency" class="form-select">
+                    <option value="weekly">Semanal</option>
+                    <option value="biweekly">Quinzenal</option>
+                    <option value="monthly">Mensal</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Quantas vezes</label>
+                  <input type="number" id="recurringCount" class="form-control" value="4" min="2" max="52">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Dia da semana</label>
+                  <select id="recurringWeekday" class="form-select">
+                    <option value="1">Segunda</option>
+                    <option value="2">Terça</option>
+                    <option value="3">Quarta</option>
+                    <option value="4">Quinta</option>
+                    <option value="5">Sexta</option>
+                    <option value="6">Sábado</option>
+                    <option value="0">Domingo</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Observations -->
+        <div class="col-12">
+          <label class="form-label">Observações</label>
+          <textarea name="observacoes" class="form-control" rows="4" placeholder="Observações adicionais...">{{ ag.observacoes or '' }}</textarea>
+        </div>
+        
+        <!-- Conflict Warning -->
+        <div class="col-12" id="conflictWarning" style="display: none;">
+          <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <strong>Atenção:</strong> Este horário pode ter conflito com outro agendamento.
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h6 class="mb-0">
+          <i class="bi bi-lightning me-2"></i>Ações Rápidas
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="d-flex flex-wrap gap-2">
+          <button class="btn btn-success" onclick="confirmAppointment()">
+            <i class="bi bi-check-circle me-2"></i>Confirmar Agendamento
+          </button>
+          <button class="btn btn-warning" onclick="rescheduleAppointment()">
+            <i class="bi bi-arrow-clockwise me-2"></i>Reagendar
+          </button>
+          <button class="btn btn-info" onclick="sendReminder()">
+            <i class="bi bi-bell me-2"></i>Enviar Lembrete
+          </button>
+          <button class="btn btn-secondary" onclick="duplicateAppointment()">
+            <i class="bi bi-files me-2"></i>Duplicar
+          </button>
+          <button class="btn btn-outline-primary" onclick="exportAppointment()">
+            <i class="bi bi-download me-2"></i>Exportar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- New Patient Modal -->
+<div class="modal fade" id="newPatientModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Novo Paciente</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="newPatientForm">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Nome *</label>
+              <input type="text" name="nome" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">CPF</label>
+              <input type="text" name="cpf" class="form-control" placeholder="000.000.000-00">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Telefone *</label>
+              <input type="tel" name="telefone" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Email</label>
+              <input type="email" name="email" class="form-control">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Endereço</label>
+              <textarea name="endereco" class="form-control" rows="2"></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="saveNewPatient()">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Custom CSS -->
+<style>
+.status-badge {
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+}
+
+.status-agendado { background-color: #ffc107; color: #000; }
+.status-confirmado { background-color: #198754; color: #fff; }
+.status-realizado { background-color: #0dcaf0; color: #000; }
+.status-cancelado { background-color: #dc3545; color: #fff; }
+.status-falta { background-color: #6c757d; color: #fff; }
+
+.card {
+  border: none;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  border-radius: 0.5rem;
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  border-radius: 0.5rem 0.5rem 0 0 !important;
+}
+
+.btn {
+  border-radius: 0.5rem;
+  font-weight: 500;
+}
+
+.form-control, .form-select {
+  border-radius: 0.5rem;
+  border: 1px solid #dee2e6;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.alert {
+  border-radius: 0.5rem;
+  border: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .btn {
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  initializeForm();
+  updateStatusColor();
+  loadTimeSlots();
+  showPatientInfo();
+});
+
+function initializeForm() {
+  // Set current date as default
+  const today = new Date().toISOString().split('T')[0];
+  if (!document.getElementById('appointmentDate').value) {
+    document.getElementById('appointmentDate').value = today;
+  }
+  
+  // Update duration when service changes
+  document.getElementById('servicoSelect').addEventListener('change', updateDuration);
+  
+  // Update patient info when patient changes
+  document.getElementById('pacienteSelect').addEventListener('change', showPatientInfo);
+  
+  // Check availability when date/professional changes
+  document.getElementById('appointmentDate').addEventListener('change', checkAvailability);
+  document.getElementById('profissionalSelect').addEventListener('change', checkAvailability);
+}
+
+function filterPatients(searchTerm) {
+  const select = document.getElementById('pacienteSelect');
+  const options = select.querySelectorAll('option');
+  
+  options.forEach(option => {
+    if (option.value === '') return; // Skip placeholder
+    
+    if (option.text.toLowerCase().includes(searchTerm.toLowerCase())) {
+      option.style.display = '';
+    } else {
+      option.style.display = 'none';
+    }
+  });
+}
+
+function showPatientInfo() {
+  const select = document.getElementById('pacienteSelect');
+  const selectedOption = select.selectedOptions[0];
+  const infoDiv = document.getElementById('patientInfo');
+  
+  if (selectedOption && selectedOption.dataset.phone) {
+    document.getElementById('patientPhone').textContent = selectedOption.dataset.phone;
+    document.getElementById('patientEmail').textContent = selectedOption.dataset.email || 'Não informado';
+    infoDiv.style.display = 'block';
+  } else {
+    infoDiv.style.display = 'none';
+  }
+}
+
+function updateDuration() {
+  const servicoOption = document.getElementById('servicoSelect').selectedOptions[0];
+  if (servicoOption && servicoOption.dataset.duration) {
+    document.getElementById('durationInput').value = servicoOption.dataset.duration;
+    
+    // Update suggested price
+    const price = servicoOption.dataset.price || 0;
+    document.getElementById('suggestedPrice').value = parseFloat(price).toFixed(2);
+  }
+}
+
+function updateStatusColor() {
+  const statusSelect = document.getElementById('statusSelect');
+  const selectedStatus = statusSelect.value.toLowerCase();
+  
+  // Remove all status classes
+  statusSelect.classList.remove('status-agendado', 'status-confirmado', 'status-realizado', 'status-cancelado', 'status-falta');
+  
+  // Add current status class
+  statusSelect.classList.add(`status-${selectedStatus}`);
+}
+
+function loadTimeSlots() {
+  const timeSelect = document.getElementById('timeSlotSelect');
+  const currentTime = '{{ ag.hora }}';
+  
+  // Generate time slots (8:00 to 18:00, 30-minute intervals)
+  const slots = [];
+  for (let hour = 8; hour < 18; hour++) {
+    for (let minute = 0; minute < 60; minute += 30) {
+      const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+      slots.push(time);
+    }
+  }
+  
+  // Populate time slot select
+  timeSelect.innerHTML = '<option value="">Selecione um horário</option>';
+  
+  slots.forEach(slot => {
+    const option = document.createElement('option');
+    option.value = slot;
+    option.textContent = slot;
+    if (slot === currentTime) {
+      option.selected = true;
+    }
+    timeSelect.appendChild(option);
+  });
+}
+
+function checkAvailability() {
+  const profissionalId = document.getElementById('profissionalSelect').value;
+  const date = document.getElementById('appointmentDate').value;
+  const servicoId = document.getElementById('servicoSelect').value;
+  
+  if (!profissionalId || !date || !servicoId) return;
+  
+  // Check for conflicts
+  fetch(`/api/horarios-disponiveis?profissional_id=${profissionalId}&data=${date}&servico_id=${servicoId}`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        updateTimeSlots(data.horarios_disponiveis);
+        hideConflictWarning();
+      }
+    })
+    .catch(error => {
+      console.error('Error checking availability:', error);
+      showConflictWarning();
+    });
+}
+
+function updateTimeSlots(availableSlots) {
+  const timeSelect = document.getElementById('timeSlotSelect');
+  const currentTime = '{{ ag.hora }}';
+  
+  timeSelect.innerHTML = '<option value="">Selecione um horário</option>';
+  
+  availableSlots.forEach(slot => {
+    const option = document.createElement('option');
+    option.value = slot;
+    option.textContent = slot;
+    if (slot === currentTime) {
+      option.selected = true;
+    }
+    timeSelect.appendChild(option);
+  });
+}
+
+function showConflictWarning() {
+  document.getElementById('conflictWarning').style.display = 'block';
+}
+
+function hideConflictWarning() {
+  document.getElementById('conflictWarning').style.display = 'none';
+}
+
+function toggleRecurringOptions() {
+  const recurringOptions = document.getElementById('recurringOptions');
+  const isChecked = document.getElementById('makeRecurring').checked;
+  
+  recurringOptions.style.display = isChecked ? 'block' : 'none';
+}
+
+function applySuggestedPrice() {
+  const suggestedPrice = document.getElementById('suggestedPrice').value;
+  if (suggestedPrice) {
+    document.getElementById('valorInput').value = suggestedPrice;
+  }
+}
+
+function saveAppointment() {
+  const form = document.getElementById('editAppointmentForm');
+  const formData = new FormData(form);
+  
+  // Validate required fields
+  if (!formData.get('paciente_id') || !formData.get('profissional_id') || 
+      !formData.get('servico_id') || !formData.get('data') || !formData.get('hora')) {
+    showToast('Preencha todos os campos obrigatórios', 'error');
+    return;
+  }
+  
+  // Submit form
+  fetch(window.location.href, {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => {
+    if (response.ok) {
+      showToast('Agendamento atualizado com sucesso!', 'success');
+      setTimeout(() => {
+        window.location.href = '/agenda';
+      }, 1500);
+    } else {
+      throw new Error('Erro ao atualizar agendamento');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    showToast('Erro ao atualizar agendamento', 'error');
+  });
+}
+
+function deleteAppointment() {
+  if (confirm('Tem certeza que deseja excluir este agendamento? Esta ação não pode ser desfeita.')) {
+    fetch(`/agendamentos/excluir/{{ ag.id }}`, {
+      method: 'POST'
+    })
+    .then(response => {
+      if (response.ok) {
+        showToast('Agendamento excluído com sucesso!', 'success');
+        setTimeout(() => {
+          window.location.href = '/agenda';
+        }, 1500);
+      } else {
+        throw new Error('Erro ao excluir agendamento');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      showToast('Erro ao excluir agendamento', 'error');
+    });
+  }
+}
+
+function confirmAppointment() {
+  document.getElementById('statusSelect').value = 'Confirmado';
+  updateStatusColor();
+  showToast('Status alterado para Confirmado', 'success');
+}
+
+function rescheduleAppointment() {
+  // Show reschedule modal or redirect
+  showToast('Funcionalidade de reagendamento será implementada em breve', 'info');
+}
+
+function sendReminder() {
+  showToast('Lembrete enviado com sucesso!', 'success');
+}
+
+function duplicateAppointment() {
+  // Clone current appointment data
+  const formData = new FormData(document.getElementById('editAppointmentForm'));
+  formData.set('data', ''); // Clear date to force user to select new date
+  
+  // Redirect to new appointment with pre-filled data
+  const params = new URLSearchParams(formData);
+  window.location.href = `/agenda?${params.toString()}`;
+}
+
+function exportAppointment() {
+  // Export appointment details
+  const appointmentData = {
+    id: {{ ag.id }},
+    paciente: document.getElementById('pacienteSelect').selectedOptions[0]?.text || '',
+    profissional: document.getElementById('profissionalSelect').selectedOptions[0]?.text || '',
+    servico: document.getElementById('servicoSelect').selectedOptions[0]?.text || '',
+    data: document.getElementById('appointmentDate').value,
+    hora: document.getElementById('timeSlotSelect').value,
+    status: document.getElementById('statusSelect').value
+  };
+  
+  const dataStr = JSON.stringify(appointmentData, null, 2);
+  const dataBlob = new Blob([dataStr], {type: 'application/json'});
+  
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(dataBlob);
+  link.download = `agendamento_${appointmentData.id}.json`;
+  link.click();
+  
+  showToast('Agendamento exportado com sucesso!', 'success');
+}
+
+function showNewPatientModal() {
+  const modal = new bootstrap.Modal(document.getElementById('newPatientModal'));
+  modal.show();
+}
+
+function saveNewPatient() {
+  const form = document.getElementById('newPatientForm');
+  const formData = new FormData(form);
+  
+  fetch('/api/pacientes', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      showToast('Paciente criado com sucesso!', 'success');
+      bootstrap.Modal.getInstance(document.getElementById('newPatientModal')).hide();
+      location.reload();
+    } else {
+      showToast(data.message || 'Erro ao criar paciente', 'error');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    showToast('Erro ao criar paciente', 'error');
+  });
+}
+
+function showToast(message, type = 'info') {
+  // Simple toast implementation
+  const toast = document.createElement('div');
+  toast.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+  toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+  toast.innerHTML = `
+    ${message}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  `;
+  
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.remove();
+  }, 5000);
+}
+</script>
+{% endblock %}

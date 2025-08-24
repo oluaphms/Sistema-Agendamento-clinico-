@@ -1,0 +1,848 @@
+{% extends "base.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/agenda.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <!-- Título removido -->
+        <p class="text-muted mb-0">Gerencie agendamentos e consultas</p>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary" onclick="toggleView('calendar')">
+          <i class="bi bi-calendar3 me-2"></i>Calendário
+        </button>
+        <button class="btn btn-outline-secondary" onclick="toggleView('list')">
+          <i class="bi bi-list-ul me-2"></i>Lista
+        </button>
+        <button class="btn btn-primary" onclick="showQuickAppointment()">
+          <i class="bi bi-calendar-plus me-2"></i>Novo Agendamento
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Stats - Removidos -->
+
+<!-- Filters and Controls -->
+<div class="card mb-4">
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-2">
+        <label class="form-label">Data</label>
+        <input type="date" id="filterDate" class="form-control" value="{{ dia }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Profissional</label>
+        <select id="filterProfissional" class="form-select">
+          <option value="">Todos</option>
+          {% for pr in profissionais %}
+            <option value="{{ pr.id }}">{{ pr.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Status</label>
+        <select id="filterStatus" class="form-select">
+          <option value="">Todos</option>
+          <option value="Agendado">Agendado</option>
+          <option value="Confirmado">Confirmado</option>
+          <option value="Realizado">Realizado</option>
+          <option value="Cancelado">Cancelado</option>
+          <option value="Falta">Falta</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Serviço</label>
+        <select id="filterServico" class="form-select">
+          <option value="">Todos</option>
+          {% for s in servicos %}
+            <option value="{{ s.id }}">{{ s.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Buscar</label>
+        <input type="text" id="searchInput" class="form-control" placeholder="Paciente...">
+      </div>
+      <div class="col-md-2 d-flex align-items-end">
+        <button class="btn btn-secondary w-100" onclick="applyFilters()">
+          <i class="bi bi-funnel me-2"></i>Filtrar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Calendar View (Hidden by default) -->
+<div id="calendarView" class="card mb-4" style="display: none;">
+  <div class="card-body p-0">
+    <div id="calendar"></div>
+  </div>
+</div>
+
+<!-- List View (Default) -->
+<div id="listView" class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Agendamentos</h5>
+    <div class="d-flex gap-2">
+      <button class="btn btn-sm btn-outline-primary" onclick="exportAgenda()">
+        <i class="bi bi-download me-1"></i>Exportar
+      </button>
+      <button class="btn btn-sm btn-outline-success" onclick="showBulkActions()">
+        <i class="bi bi-collection me-1"></i>Ações em Lote
+      </button>
+    </div>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>
+              <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+            </th>
+            <th>Hora</th>
+            <th>Paciente</th>
+            <th>Profissional</th>
+            <th>Serviço</th>
+            <th>Status</th>
+            <th>Valor</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="agendamentosTable">
+          {% for a in agendamentos %}
+            <tr data-id="{{ a.id }}" data-prof-id="{{ a.profissional.id }}" data-serv-id="{{ a.servico.id }}" class="agendamento-row">
+              <td>
+                <input type="checkbox" class="agendamento-checkbox" value="{{ a.id }}">
+              </td>
+              <td>
+                <div class="d-flex flex-column">
+                  <strong>{{ a.hora }}</strong>
+                  <small class="text-muted">{{ a.duracao }}min</small>
+                </div>
+              </td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="avatar-sm me-2">
+                    <i class="bi bi-person-circle fs-4"></i>
+                  </div>
+                  <div>
+                    <strong>{{ a.paciente.nome }}</strong>
+                    {% if a.paciente.telefone %}
+                      <br><small class="text-muted">{{ a.paciente.telefone }}</small>
+                    {% endif %}
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="avatar-sm me-2">
+                    <i class="bi bi-person-badge fs-4"></i>
+                  </div>
+                  <div>
+                    <strong>{{ a.profissional.nome }}</strong>
+                    <br><small class="text-muted">{{ a.profissional.especialidade or 'Especialidade' }}</small>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="badge bg-primary">{{ a.servico.nome }}</span>
+                <br><small class="text-muted">{{ a.servico.duracao_min }}min</small>
+              </td>
+              <td>
+                <span class="badge status-badge status-{{ a.status.lower() }}">
+                  {{ a.status }}
+                </span>
+              </td>
+              <td>
+                {% if a.valor_pago %}
+                  <strong class="text-success">R$ {{ "%.2f"|format(a.valor_pago) }}</strong>
+                {% else %}
+                  <span class="text-muted">-</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <button class="btn btn-outline-primary" onclick="editAppointment({{ a.id }})" title="Editar">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="btn btn-outline-success" onclick="confirmAppointment({{ a.id }})" title="Confirmar">
+                    <i class="bi bi-check"></i>
+                  </button>
+                  <button class="btn btn-outline-warning" onclick="rescheduleAppointment({{ a.id }})" title="Reagendar">
+                    <i class="bi bi-arrow-clockwise"></i>
+                  </button>
+                  <button class="btn btn-outline-danger" onclick="cancelAppointment({{ a.id }})" title="Cancelar">
+                    <i class="bi bi-x"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="8" class="text-center py-4">
+                <div class="text-muted">
+                  <i class="bi bi-calendar-x fs-1 d-block mb-2"></i>
+                  <p>Nenhum agendamento encontrado para esta data.</p>
+                  
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Appointment Modal -->
+<div class="modal fade" id="quickAppointmentModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-calendar-plus me-2"></i>Novo Agendamento
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="quickAppointmentForm">
+          <!-- Informações do Paciente -->
+          <div class="row g-3 mb-3">
+            <div class="col-12">
+              <h6 class="text-primary border-bottom pb-2">
+                <i class="bi bi-person me-2"></i>Informações do Paciente
+              </h6>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Paciente *</label>
+              <select name="paciente_id" id="pacienteSelect" class="form-select" required>
+                <option value="">Selecione um paciente</option>
+                {% for p in pacientes %}
+                  <option value="{{ p.id }}" data-phone="{{ p.telefone or '' }}">{{ p.nome }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <!-- Informações do Agendamento -->
+          <div class="row g-3 mb-3">
+            <div class="col-12">
+              <h6 class="text-primary border-bottom pb-2">
+                <i class="bi bi-calendar-event me-2"></i>Detalhes do Agendamento
+              </h6>
+            </div>
+            
+            <div class="col-md-6">
+              <label class="form-label">Profissional *</label>
+              <select name="profissional_id" id="profissionalSelect" class="form-select" required onchange="loadAvailableSlots()">
+                <option value="">Selecione um profissional</option>
+                {% for pr in profissionais %}
+                  <option value="{{ pr.id }}">{{ pr.nome }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            
+            <div class="col-md-6">
+              <label class="form-label">Serviço *</label>
+              <select name="servico_id" id="servicoSelect" class="form-select" required onchange="updateDuration()">
+                <option value="">Selecione um serviço</option>
+                {% for s in servicos %}
+                  <option value="{{ s.id }}" data-duration="{{ s.duracao_min }}">{{ s.nome }} ({{ s.duracao_min }}min)</option>
+                {% endfor %}
+              </select>
+            </div>
+            
+            <div class="col-md-6">
+              <label class="form-label">Data *</label>
+              <input type="date" name="data" id="appointmentDate" class="form-control" required onchange="loadAvailableSlots()">
+            </div>
+            
+            <div class="col-md-6">
+              <label class="form-label">Horário Disponível *</label>
+              <select name="hora" id="timeSlotSelect" class="form-select" required>
+                <option value="">Selecione um horário</option>
+              </select>
+            </div>
+            
+            <div class="col-md-6">
+              <label class="form-label">Status</label>
+              <select name="status" class="form-select">
+                <option value="Agendado">Agendado</option>
+                <option value="Confirmado">Confirmado</option>
+                <option value="Realizado">Realizado</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Informações Adicionais -->
+          <div class="row g-3 mb-3">
+            <div class="col-12">
+              <h6 class="text-primary border-bottom pb-2">
+                <i class="bi bi-info-circle me-2"></i>Informações Adicionais
+              </h6>
+            </div>
+            
+            <div class="col-md-6">
+              <label class="form-label">Origem</label>
+              <select name="origem" class="form-select">
+                <option value="online">Online</option>
+                <option value="telefone">Telefone</option>
+                <option value="WhatsApp">WhatsApp</option>
+                <option value="presencial">Presencial</option>
+              </select>
+            </div>
+            
+            <div class="col-md-6">
+              <label class="form-label">Valor</label>
+              <div class="input-group">
+                <span class="input-group-text">R$</span>
+                <input type="number" step="0.01" name="valor_pago" class="form-control" placeholder="0.00">
+              </div>
+            </div>
+            
+            <div class="col-12">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="recurringCheck" onchange="toggleRecurringOptions()">
+                <label class="form-check-label" for="recurringCheck">
+                  <i class="bi bi-arrow-repeat me-2"></i>Agendamento recorrente
+                </label>
+              </div>
+            </div>
+            
+            <div class="col-12" id="recurringOptions" style="display: none;">
+              <div class="row g-3 p-3 bg-light rounded">
+                <div class="col-md-4">
+                  <label class="form-label">Frequência</label>
+                  <select id="recurringFrequency" class="form-select">
+                    <option value="weekly">Semanal</option>
+                    <option value="biweekly">Quinzenal</option>
+                    <option value="monthly">Mensal</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Quantas vezes</label>
+                  <input type="number" id="recurringCount" class="form-control" value="4" min="2" max="52">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Dia da semana</label>
+                  <select id="recurringWeekday" class="form-select">
+                    <option value="1">Segunda</option>
+                    <option value="2">Terça</option>
+                    <option value="3">Quarta</option>
+                    <option value="4">Quinta</option>
+                    <option value="5">Sexta</option>
+                    <option value="6">Sábado</option>
+                    <option value="0">Domingo</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-12">
+              <label class="form-label">Observações</label>
+              <textarea name="observacoes" class="form-control" rows="3" placeholder="Observações adicionais sobre o agendamento..."></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="bi bi-x-circle me-2"></i>Cancelar
+        </button>
+        <button type="button" class="btn btn-primary" onclick="saveAppointment()">
+          <i class="bi bi-calendar-check me-2"></i>Agendar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- New Patient Modal -->
+<div class="modal fade" id="newPatientModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Novo Paciente</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="newPatientForm">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Nome *</label>
+              <input type="text" name="nome" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">CPF</label>
+              <input type="text" name="cpf" class="form-control" placeholder="000.000.000-00">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Telefone *</label>
+              <input type="tel" name="telefone" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Email</label>
+              <input type="email" name="email" class="form-control">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Endereço</label>
+              <textarea name="endereco" class="form-control" rows="2"></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="saveNewPatient()">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk Actions Modal -->
+<div class="modal fade" id="bulkActionsModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Ações em Lote</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Selecione as ações para aplicar aos <span id="selectedCount">0</span> agendamentos selecionados:</p>
+        <div class="d-grid gap-2">
+          <button class="btn btn-success" onclick="bulkConfirm()">
+            <i class="bi bi-check-circle me-2"></i>Confirmar Todos
+          </button>
+          <button class="btn btn-warning" onclick="bulkReschedule()">
+            <i class="bi bi-arrow-clockwise me-2"></i>Reagendar Todos
+          </button>
+          <button class="btn btn-danger" onclick="bulkCancel()">
+            <i class="bi bi-x-circle me-2"></i>Cancelar Todos
+          </button>
+          <button class="btn btn-info" onclick="bulkExport()">
+            <i class="bi bi-download me-2"></i>Exportar Selecionados
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Custom CSS -->
+<style>
+.status-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.status-agendado { background-color: #ffc107; color: #000; }
+.status-confirmado { background-color: #198754; color: #fff; }
+.status-realizado { background-color: #0dcaf0; color: #000; }
+.status-cancelado { background-color: #dc3545; color: #fff; }
+.status-falta { background-color: #6c757d; color: #fff; }
+
+.avatar-sm {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  border-radius: 50%;
+}
+
+.agendamento-row:hover {
+  background-color: #f8f9fa;
+}
+
+.btn-group-sm .btn {
+  padding: 0.25rem 0.5rem;
+}
+
+#calendar {
+  height: 600px;
+}
+
+.fc-event {
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.fc-event:hover {
+  transform: scale(1.02);
+  transition: transform 0.2s ease;
+}
+
+/* Estilos para o Modal de Novo Agendamento */
+#quickAppointmentModal .modal-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+#quickAppointmentModal .modal-header .btn-close {
+  filter: invert(1);
+}
+
+#quickAppointmentModal .form-label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 0.5rem;
+}
+
+#quickAppointmentModal .border-bottom {
+  border-color: #dee2e6 !important;
+}
+
+#quickAppointmentModal .text-primary {
+  color: #0d6efd !important;
+}
+
+#quickAppointmentModal .bg-light {
+  background-color: #f8f9fa !important;
+  border: 1px solid #e9ecef;
+}
+
+#quickAppointmentModal .form-control:focus,
+#quickAppointmentModal .form-select:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+#quickAppointmentModal .input-group-text {
+  background-color: #e9ecef;
+  border-color: #ced4da;
+  color: #6c757d;
+}
+
+#quickAppointmentModal .form-check-input:checked {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+#quickAppointmentModal .form-check-label {
+  color: #495057;
+  font-weight: 500;
+}
+
+/* Estilos para novos agendamentos */
+.new-appointment {
+  animation: highlightNew 3s ease-in-out;
+  background-color: #d4edda !important;
+  border-left: 4px solid #28a745;
+}
+
+@keyframes highlightNew {
+  0% {
+    background-color: #d4edda;
+    transform: scale(1);
+  }
+  50% {
+    background-color: #c3e6cb;
+    transform: scale(1.02);
+  }
+  100% {
+    background-color: #d4edda;
+    transform: scale(1);
+  }
+}
+
+/* Estilos para toasts */
+.toast {
+  min-width: 300px;
+}
+
+.toast.bg-success {
+  background-color: #28a745 !important;
+}
+
+.toast.bg-danger {
+  background-color: #dc3545 !important;
+}
+
+/* Melhorias na tabela */
+.agendamento-row {
+  transition: all 0.3s ease;
+}
+
+.agendamento-row:hover {
+  background-color: #f8f9fa;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Indicador de carregamento */
+.btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .btn-group-sm .btn {
+    padding: 0.375rem 0.75rem;
+  }
+  
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+  
+  #quickAppointmentModal .modal-dialog {
+    margin: 0.5rem;
+  }
+  
+  #quickAppointmentModal .row.g-3 {
+    --bs-gutter-x: 0.75rem;
+    --bs-gutter-y: 0.75rem;
+  }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<!-- Verificação e fallback para funções da agenda -->
+<script>
+console.log('=== VERIFICAÇÃO DE CARREGAMENTO DO AGENDA.JS ===');
+
+// Função para verificar se o agenda.js foi carregado
+function checkAgendaJSLoaded() {
+    const requiredFunctions = ['showQuickAppointment', 'toggleView', 'applyFilters'];
+    let allLoaded = true;
+    
+    requiredFunctions.forEach(funcName => {
+        if (typeof window[funcName] === 'function') {
+            console.log(`✅ ${funcName} está disponível`);
+        } else {
+            console.warn(`⚠️ ${funcName} não encontrada`);
+            allLoaded = false;
+        }
+    });
+    
+    return allLoaded;
+}
+
+// Verificar imediatamente
+if (!checkAgendaJSLoaded()) {
+    console.warn('Agenda.js não carregou completamente, aguardando...');
+    
+    // Aguardar um pouco mais e verificar novamente
+    setTimeout(() => {
+        if (!checkAgendaJSLoaded()) {
+            console.error('Agenda.js ainda não carregou, definindo funções de fallback');
+            defineFallbackFunctions();
+        }
+    }, 500);
+}
+
+// Função para definir funções de fallback
+function defineFallbackFunctions() {
+    console.log('Definindo funções de fallback...');
+    
+    window.showQuickAppointment = function() {
+        console.log('showQuickAppointment chamada (fallback local)');
+        
+        // Verificar se o modal existe
+        const modal = document.getElementById('quickAppointmentModal');
+        if (!modal) {
+            console.error('Modal de novo agendamento não encontrado');
+            alert('Modal não encontrado. Verifique se a página carregou completamente.');
+            return;
+        }
+        
+        // Limpar formulário
+        const form = document.getElementById('quickAppointmentForm');
+        if (form) {
+            form.reset();
+            
+            // Definir data atual como padrão
+            const dateInput = document.getElementById('appointmentDate');
+            if (dateInput) {
+                const today = new Date().toISOString().split('T')[0];
+                dateInput.value = today;
+            }
+            
+            // Limpar seleções
+            const pacienteSelect = document.getElementById('pacienteSelect');
+            const profissionalSelect = document.getElementById('profissionalSelect');
+            const servicoSelect = document.getElementById('servicoSelect');
+            const timeSlotSelect = document.getElementById('timeSlotSelect');
+            
+            if (pacienteSelect) pacienteSelect.value = '';
+            if (profissionalSelect) profissionalSelect.value = '';
+            if (servicoSelect) {
+                servicoSelect.value = '';
+                if (typeof updateDuration === 'function') {
+                    updateDuration();
+                }
+            }
+            if (timeSlotSelect) timeSlotSelect.innerHTML = '<option value="">Selecione um horário</option>';
+        }
+        
+        // Mostrar modal usando Bootstrap
+        try {
+            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                const bootstrapModal = new bootstrap.Modal(modal);
+                bootstrapModal.show();
+                console.log('Modal de novo agendamento aberto (Bootstrap)');
+            } else {
+                // Fallback: mostrar modal manualmente
+                modal.style.display = 'block';
+                modal.classList.add('show');
+                document.body.classList.add('modal-open');
+                console.log('Modal de novo agendamento aberto (fallback manual)');
+            }
+        } catch (error) {
+            console.error('Erro ao abrir modal:', error);
+            // Fallback: mostrar modal manualmente
+            modal.style.display = 'block';
+            modal.classList.add('show');
+            document.body.classList.add('modal-open');
+        }
+    };
+
+    window.toggleView = function(view) {
+        console.log('toggleView chamada (fallback local):', view);
+        
+        // Esconder todas as visualizações
+        const calendarView = document.getElementById('calendarView');
+        const listView = document.getElementById('listView');
+        
+        if (view === 'calendar') {
+            if (calendarView) {
+                calendarView.style.display = 'block';
+                listView.style.display = 'none';
+                if (typeof updateActiveViewButtons === 'function') {
+                    updateActiveViewButtons('calendar');
+                }
+            }
+        } else if (view === 'list') {
+            if (listView) {
+                listView.style.display = 'block';
+                calendarView.style.display = 'none';
+                if (typeof updateActiveViewButtons === 'function') {
+                    updateActiveViewButtons('list');
+                }
+            }
+        }
+        
+        // Salvar preferência do usuário
+        localStorage.setItem('agendaView', view);
+    };
+
+        // applyFilters fallback
+    if (typeof window.applyFilters !== 'function') {
+        window.applyFilters = function() {
+            console.log('applyFilters chamada (fallback local)');
+            
+            const dateFilter = document.getElementById('filterDate')?.value;
+            const profissionalFilter = document.getElementById('filterProfissional')?.value;
+            const statusFilter = document.getElementById('filterStatus')?.value;
+            const servicoFilter = document.getElementById('filterServico')?.value;
+            const searchTerm = document.getElementById('searchInput')?.value.toLowerCase();
+            
+            console.log('Filtros aplicados:', { dateFilter, profissionalFilter, statusFilter, servicoFilter, searchTerm });
+            
+            // Implementar lógica de filtro básica se necessário
+            alert('Filtros aplicados! Função completa disponível no agenda.js');
+        };
+        console.log('✅ applyFilters definida como fallback');
+    }
+    
+    console.log('✅ Funções de fallback definidas com sucesso');
+}
+
+// Função auxiliar para atualizar botões ativos
+function updateActiveViewButtons(activeView) {
+    const buttons = document.querySelectorAll('[onclick^="toggleView"]');
+    buttons.forEach(btn => {
+        if (btn.onclick.toString().includes(activeView)) {
+            btn.classList.remove('btn-outline-secondary');
+            btn.classList.add('btn-secondary');
+        } else {
+            btn.classList.remove('btn-secondary');
+            btn.classList.add('btn-outline-secondary');
+        }
+    });
+}
+
+console.log('=== VERIFICAÇÃO COMPLETA ===');
+</script>
+
+<!-- Script de verificação final -->
+<script>
+// Verificação final após carregamento completo
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== VERIFICAÇÃO FINAL ===');
+    console.log('Todas as funções devem estar funcionando agora!');
+    
+    // Testar se os botões estão funcionando
+    const buttons = document.querySelectorAll('button[onclick]');
+    console.log(`Encontrados ${buttons.length} botões com onclick`);
+    
+    buttons.forEach((button, index) => {
+        const onclick = button.getAttribute('onclick');
+        console.log(`Botão ${index + 1}: ${onclick}`);
+    });
+    
+    // Configurar eventos para o modal de novo agendamento
+    if (typeof setupAppointmentModal === 'function') {
+        setupAppointmentModal();
+    }
+    
+    // Inicializar sistema de armazenamento local se disponível
+    if (typeof initializeLocalStorage === 'function') {
+        initializeLocalStorage();
+    }
+    
+    // Verificação final das funções
+    setTimeout(() => {
+        if (typeof window.showQuickAppointment === 'function') {
+            console.log('✅ showQuickAppointment funcionando corretamente');
+        } else {
+            console.error('❌ showQuickAppointment ainda não está funcionando');
+        }
+    }, 200);
+});
+
+// Função para configurar o modal de agendamento
+function setupAppointmentModal() {
+    const pacienteSelect = document.getElementById('pacienteSelect');
+    const pacienteTelefone = document.getElementById('pacienteTelefone');
+    
+    if (pacienteSelect && pacienteTelefone) {
+        pacienteSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const phone = selectedOption.dataset.phone;
+            
+            if (phone) {
+                pacienteTelefone.value = phone;
+            } else {
+                pacienteTelefone.value = '';
+            }
+        });
+        
+        // Limpar telefone quando modal for fechado
+        const modal = document.getElementById('quickAppointmentModal');
+        if (modal) {
+            modal.addEventListener('hidden.bs.modal', function() {
+                if (pacienteTelefone) {
+                    pacienteTelefone.value = '';
+                }
+                if (pacienteSelect) {
+                    pacienteSelect.selectedIndex = 0;
+                }
+            });
+        }
+    }
+}
+</script>
+{% endblock %}
+

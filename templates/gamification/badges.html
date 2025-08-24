@@ -1,0 +1,468 @@
+{% extends "base.html" %}
+
+{% block title %}Badges - Gamificação{% endblock %}
+
+{% block extra_css %}
+<style>
+    .badges-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    .badge-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .badge-item {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .badge-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .badge-item.unlocked {
+        border: 3px solid #28a745;
+    }
+    
+    .badge-item.locked {
+        opacity: 0.7;
+        filter: grayscale(0.5);
+    }
+    
+    .badge-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+    
+    .badge-name {
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        color: #333;
+    }
+    
+    .badge-description {
+        color: #666;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+    
+    .badge-requirements {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+        font-size: 0.85rem;
+    }
+    
+    .badge-reward {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        border-radius: 20px;
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        font-weight: bold;
+    }
+    
+    .badge-rarity {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+    
+    .rarity-common { background: #6c757d; color: white; }
+    .rarity-rare { background: #28a745; color: white; }
+    .rarity-epic { background: #6f42c1; color: white; }
+    .rarity-legendary { background: #fd7e14; color: white; }
+    
+    .badge-progress {
+        margin-top: 1rem;
+    }
+    
+    .progress {
+        height: 8px;
+        border-radius: 4px;
+        background: #e9ecef;
+        overflow: hidden;
+    }
+    
+    .progress-bar {
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        transition: width 0.3s ease;
+    }
+    
+    .progress-text {
+        font-size: 0.8rem;
+        color: #666;
+        margin-top: 0.5rem;
+    }
+    
+    .unlock-date {
+        background: #28a745;
+        color: white;
+        border-radius: 8px;
+        padding: 0.5rem;
+        font-size: 0.8rem;
+        margin-top: 1rem;
+    }
+    
+    .category-filter {
+        background: white;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .filter-btn {
+        background: #f8f9fa;
+        border: 2px solid transparent;
+        color: #666;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        margin: 0.25rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .filter-btn.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+    
+    .filter-btn:hover {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+    
+    .stats-summary {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .stats-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #667eea;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stats-label {
+        color: #666;
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header dos Badges -->
+<div class="badges-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-4 mb-3">
+                    🎖️ Badges e Conquistas
+                </h1>
+                <p class="lead mb-0">
+                    Desbloqueie badges especiais e mostre suas conquistas!
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="text-center">
+                    <div class="h2 mb-0">{{ user_badges|length }}</div>
+                    <small>Badges Conquistados</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Resumo de Estatísticas -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="stats-summary">
+                <div class="stats-number">{{ user_badges|length }}</div>
+                <div class="stats-label">Conquistados</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-summary">
+                <div class="stats-number">{{ badges_overview[user_type]|length }}</div>
+                <div class="stats-label">Disponíveis</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-summary">
+                <div class="stats-number">{{ (user_badges|length / badges_overview[user_type]|length * 100)|round(1) }}%</div>
+                <div class="stats-label">Completado</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-summary">
+                <div class="stats-number">{{ user_badges|selectattr('rarity', 'equalto', 'legendary')|list|length }}</div>
+                <div class="stats-label">Lendários</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filtros por Categoria -->
+    <div class="category-filter">
+        <h5 class="mb-3">
+            <i class="fas fa-filter me-2"></i>
+            Filtrar por Categoria
+        </h5>
+        
+        <button class="filter-btn active" data-category="all">
+            Todas
+        </button>
+        <button class="filter-btn" data-category="attendance">
+            <i class="fas fa-clock me-1"></i>
+            Presença
+        </button>
+        <button class="filter-btn" data-category="loyalty">
+            <i class="fas fa-heart me-1"></i>
+            Fidelidade
+        </button>
+        <button class="filter-btn" data-category="performance">
+            <i class="fas fa-star me-1"></i>
+            Desempenho
+        </button>
+        <button class="filter-btn" data-category="productivity">
+            <i class="fas fa-chart-line me-1"></i>
+            Produtividade
+        </button>
+    </div>
+    
+    <!-- Grid de Badges -->
+    <div class="badge-grid" id="badge-grid">
+        {% for badge in badges_overview[user_type] %}
+        {% set user_badge = user_badges|selectattr('id', 'equalto', badge.id)|first %}
+        {% set is_unlocked = user_badge is not none %}
+        
+        <div class="badge-item {{ 'unlocked' if is_unlocked else 'locked' }}" 
+             data-category="{{ badge.category }}"
+             data-rarity="{{ badge.rarity }}">
+            
+            <!-- Indicador de Raridade -->
+            <div class="badge-rarity rarity-{{ badge.rarity }}">
+                {{ badge.rarity }}
+            </div>
+            
+            <!-- Ícone do Badge -->
+            <div class="badge-icon">{{ badge.icon }}</div>
+            
+            <!-- Nome do Badge -->
+            <div class="badge-name">{{ badge.name }}</div>
+            
+            <!-- Descrição -->
+            <div class="badge-description">{{ badge.description }}</div>
+            
+            <!-- Requisitos -->
+            <div class="badge-requirements">
+                <strong>Requisito:</strong><br>
+                {% if badge.requirement_type == 'streak' %}
+                    {{ badge.requirement_value }} consultas seguidas
+                {% elif badge.requirement_type == 'count' %}
+                    {{ badge.requirement_value }} consultas realizadas
+                {% elif badge.requirement_type == 'days' %}
+                    {{ badge.requirement_value }} dias sem faltas
+                {% elif badge.requirement_type == 'ranking' %}
+                    {{ badge.requirement_value }}º lugar no ranking
+                {% else %}
+                    {{ badge.requirement_value }} pontos
+                {% endif %}
+            </div>
+            
+            <!-- Recompensa -->
+            {% if badge.points_reward > 0 %}
+            <div class="badge-reward">
+                +{{ badge.points_reward }} pontos
+            </div>
+            {% endif %}
+            
+            <!-- Progresso (se não desbloqueado) -->
+            {% if not is_unlocked %}
+            <div class="badge-progress">
+                <div class="progress">
+                    <div class="progress-bar" style="width: 0%"></div>
+                </div>
+                <div class="progress-text">
+                    Em progresso...
+                </div>
+            </div>
+            {% else %}
+            <!-- Data de Desbloqueio -->
+            <div class="unlock-date">
+                <i class="fas fa-unlock me-1"></i>
+                Desbloqueado em {{ user_badge.unlocked_at.split('T')[0] }}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Mensagem se não houver badges -->
+    {% if not badges_overview[user_type] %}
+    <div class="text-center py-5">
+        <div class="h3 text-muted mb-3">
+            <i class="fas fa-trophy"></i>
+        </div>
+        <p class="text-muted">
+            Nenhum badge disponível para {{ 'pacientes' if user_type == 'patient' else 'profissionais' }} ainda.
+        </p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializa filtros
+    initializeFilters();
+    
+    // Calcula progresso dos badges
+    calculateBadgeProgress();
+});
+
+function initializeFilters() {
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const badgeItems = document.querySelectorAll('.badge-item');
+    
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const category = this.dataset.category;
+            
+            // Atualiza botões ativos
+            filterBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Filtra badges
+            badgeItems.forEach(item => {
+                if (category === 'all' || item.dataset.category === category) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    });
+}
+
+function calculateBadgeProgress() {
+    // Simula cálculo de progresso para badges não desbloqueados
+    const lockedBadges = document.querySelectorAll('.badge-item.locked');
+    
+    lockedBadges.forEach(badge => {
+        const progressBar = badge.querySelector('.progress-bar');
+        const progressText = badge.querySelector('.progress-text');
+        
+        if (progressBar && progressText) {
+            // Simula progresso aleatório para demonstração
+            const progress = Math.floor(Math.random() * 80); // 0-80%
+            progressBar.style.width = progress + '%';
+            
+            if (progress > 0) {
+                progressText.textContent = `${progress}% completo`;
+            } else {
+                progressText.textContent = 'Ainda não iniciado';
+            }
+        }
+    });
+}
+
+// Função para mostrar popup de badge desbloqueado
+function showBadgeUnlocked(badgeName, badgeIcon) {
+    // Cria popup de notificação
+    const popup = document.createElement('div');
+    popup.className = 'achievement-popup';
+    popup.innerHTML = `
+        <div class="text-center">
+            <div class="h4 mb-2">🎉 Badge Desbloqueado!</div>
+            <div class="badge-icon mb-2">${badgeIcon}</div>
+            <div>${badgeName}</div>
+        </div>
+    `;
+    
+    document.body.appendChild(popup);
+    
+    // Remove após 5 segundos
+    setTimeout(() => {
+        popup.remove();
+    }, 5000);
+}
+
+// Simula desbloqueio de badge para demonstração
+function simulateBadgeUnlock() {
+    const lockedBadges = document.querySelectorAll('.badge-item.locked');
+    if (lockedBadges.length > 0) {
+        const randomBadge = lockedBadges[Math.floor(Math.random() * lockedBadges.length)];
+        const badgeName = randomBadge.querySelector('.badge-name').textContent;
+        const badgeIcon = randomBadge.querySelector('.badge-icon').textContent;
+        
+        // Simula desbloqueio
+        randomBadge.classList.remove('locked');
+        randomBadge.classList.add('unlocked');
+        
+        // Mostra popup
+        showBadgeUnlocked(badgeName, badgeIcon);
+        
+        // Atualiza estatísticas
+        updateBadgeStats();
+    }
+}
+
+function updateBadgeStats() {
+    const unlockedCount = document.querySelectorAll('.badge-item.unlocked').length;
+    const totalCount = document.querySelectorAll('.badge-item').length;
+    
+    // Atualiza contadores
+    const conqueredEl = document.querySelector('.stats-summary:nth-child(1) .stats-number');
+    const completedEl = document.querySelector('.stats-summary:nth-child(3) .stats-number');
+    
+    if (conqueredEl) conqueredEl.textContent = unlockedCount;
+    if (completedEl) completedEl.textContent = Math.round((unlockedCount / totalCount) * 100) + '%';
+}
+
+// Botão para simular desbloqueio (apenas para demonstração)
+document.addEventListener('DOMContentLoaded', function() {
+    // Adiciona botão de demonstração se for admin
+    if (document.querySelector('.badge-item.locked')) {
+        const demoBtn = document.createElement('button');
+        demoBtn.className = 'btn btn-warning position-fixed';
+        demoBtn.style.cssText = 'bottom: 20px; right: 20px; z-index: 1000;';
+        demoBtn.innerHTML = '🎯 Simular Badge';
+        demoBtn.onclick = simulateBadgeUnlock;
+        document.body.appendChild(demoBtn);
+    }
+});
+</script>
+{% endblock %}

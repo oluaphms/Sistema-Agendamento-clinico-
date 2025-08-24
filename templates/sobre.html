@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header bg-primary text-white text-center">
+        <h3 class="card-title mb-0">
+          <i class="bi bi-code-slash me-2"></i>
+          <!-- Título removido -->
+        </h3>
+      </div>
+      <div class="card-body">
+        <div class="text-center mb-4">
+          <div class="bg-primary bg-gradient rounded-circle p-4 mx-auto" style="width: 120px; height: 120px;">
+            <i class="bi bi-heart-pulse-fill text-white" style="font-size: 3rem;"></i>
+          </div>
+          <h4 class="mt-3 text-primary">Sistema Clínica</h4>
+          <p class="text-muted">Sistema completo de gestão clínica</p>
+        </div>
+
+        <div class="row g-4">
+          <div class="col-md-6">
+            <div class="card h-100 border-0 bg-light">
+              <div class="card-body text-center">
+                <i class="bi bi-info-circle text-primary mb-3" style="font-size: 2rem;"></i>
+                <h6 class="card-title">Informações do Sistema</h6>
+                <ul class="list-unstyled text-start">
+                  <li><strong>Versão:</strong> 2.0.0</li>
+                  <li><strong>Linguagem:</strong> Python 3.13</li>
+                  <li><strong>Framework:</strong> Flask</li>
+                  <li><strong>Banco:</strong> SQLite</strong></li>
+                  <li><strong>Frontend:</strong> Bootstrap 5</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card h-100 border-0 bg-light">
+              <div class="card-body text-center">
+                <i class="bi bi-gear text-success mb-3" style="font-size: 2rem;"></i>
+                <h6 class="card-title">Funcionalidades</h6>
+                <ul class="list-unstyled text-start">
+                  <li>✅ Gestão de Pacientes</li>
+                  <li>✅ Agendamentos</li>
+                  <li>✅ Prontuários</li>
+                  <li>✅ Controle de Acesso</li>
+                  <li>✅ Relatórios</li>
+                  <li>✅ Sistema de Notificações</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mt-4">
+          <div class="col-12">
+            <div class="card border-0 bg-light">
+              <div class="card-body text-center">
+                <i class="bi bi-person-badge text-warning mb-3" style="font-size: 2rem;"></i>
+                <h6 class="card-title">Desenvolvedor</h6>
+                <p class="mb-2"><strong>PHMS/DEV</strong></p>
+                <p class="text-muted mb-0">Sistema desenvolvido com foco em segurança, usabilidade e escalabilidade</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mt-4">
+          <div class="col-12">
+            <div class="card border-0 bg-light">
+              <div class="card-body text-center">
+                <i class="bi bi-shield-check text-info mb-3" style="font-size: 2rem;"></i>
+                <h6 class="card-title">Segurança</h6>
+                <ul class="list-unstyled text-start">
+                  <li>🔐 Controle de acesso hierárquico</li>
+                  <li>🔑 Hash de senhas com bcrypt</li>
+                  <li>📱 Validação de CPF brasileiro</li>
+                  <li>🚪 Primeiro acesso obrigatório</li>
+                  <li>📊 Logs de auditoria</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-center mt-4">
+          <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+            <i class="bi bi-arrow-left me-2"></i>Voltar ao Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

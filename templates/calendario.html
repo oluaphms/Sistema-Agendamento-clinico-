@@ -1,0 +1,645 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <h2 class="mb-1">Calendário</h2>
+        <p class="text-muted mb-0">Visualize e gerencie todos os agendamentos</p>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary" onclick="location.href='{{ url_for('agenda') }}'">
+          <i class="bi bi-calendar-plus me-2"></i>Novo Agendamento
+        </button>
+        <button class="btn btn-outline-secondary" onclick="exportarCalendario()">
+          <i class="bi bi-download me-2"></i>Exportar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Calendar Controls -->
+<div class="row mb-4">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex flex-wrap gap-3 align-items-center">
+          <div class="d-flex align-items-center">
+            <span class="me-2 text-muted">Filtros:</span>
+            <div class="btn-group btn-group-sm" role="group">
+              <input type="radio" class="btn-check" name="statusFilter" id="allStatus" value="" checked>
+              <label class="btn btn-outline-secondary" for="allStatus">Todos</label>
+              
+              <input type="radio" class="btn-check" name="statusFilter" id="confirmedStatus" value="Confirmado">
+              <label class="btn btn-outline-success" for="confirmedStatus">Confirmados</label>
+              
+              <input type="radio" class="btn-check" name="statusFilter" id="pendingStatus" value="Agendado">
+              <label class="btn btn-outline-warning" for="pendingStatus">Pendentes</label>
+              
+              <input type="radio" class="btn-check" name="statusFilter" id="cancelledStatus" value="Cancelado">
+              <label class="btn btn-outline-danger" for="cancelledStatus">Cancelados</label>
+            </div>
+          </div>
+          
+          <div class="d-flex align-items-center">
+            <span class="me-2 text-muted">Profissional:</span>
+            <select class="form-select form-select-sm" id="profissionalFilter" style="width: auto;">
+              <option value="">Todos</option>
+              <!-- This will be populated dynamically -->
+            </select>
+          </div>
+          
+          <div class="d-flex align-items-center">
+            <span class="me-2 text-muted">Visualização:</span>
+            <div class="btn-group btn-group-sm" role="group">
+              <button class="btn btn-outline-primary" id="monthView">
+                <i class="bi bi-calendar-month me-1"></i>Mês
+              </button>
+              <button class="btn btn-outline-primary" id="weekView">
+                <i class="bi bi-calendar-week me-1"></i>Semana
+              </button>
+              <button class="btn btn-outline-primary" id="dayView">
+                <i class="bi bi-calendar-day me-1"></i>Dia
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-body">
+        <h6 class="card-title mb-3">
+          <i class="bi bi-info-circle me-2"></i>Legenda
+        </h6>
+        <div class="d-flex flex-column gap-2">
+          <div class="d-flex align-items-center">
+            <div class="calendar-legend confirmed me-2"></div>
+            <small>Confirmado</small>
+          </div>
+          <div class="d-flex align-items-center">
+            <div class="calendar-legend pending me-2"></div>
+            <small>Pendente</small>
+          </div>
+          <div class="d-flex align-items-center">
+            <div class="calendar-legend cancelled me-2"></div>
+            <small>Cancelado</small>
+          </div>
+          <div class="d-flex align-items-center">
+            <div class="calendar-legend completed me-2"></div>
+            <small>Realizado</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Calendar Container -->
+<div class="card">
+  <div class="card-body p-0">
+    <div id="calendar"></div>
+  </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row mt-4">
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <i class="bi bi-calendar-check text-success fs-1"></i>
+        <h5 class="card-title mt-2" id="totalAgendamentos">0</h5>
+        <p class="card-text text-muted">Total de Agendamentos</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <i class="bi bi-check-circle text-success fs-1"></i>
+        <h5 class="card-title mt-2" id="confirmados">0</h5>
+        <p class="card-text text-muted">Confirmados</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <i class="bi bi-clock text-warning fs-1"></i>
+        <h5 class="card-title mt-2" id="pendentes">0</h5>
+        <p class="card-text text-muted">Pendentes</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center">
+      <div class="card-body">
+        <i class="bi bi-x-circle text-danger fs-1"></i>
+        <h5 class="card-title mt-2" id="cancelados">0</h5>
+        <p class="card-text text-muted">Cancelados</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Custom CSS -->
+<style>
+/* Calendar Customization */
+.fc {
+  font-family: var(--bs-body-font-family);
+}
+
+.fc-toolbar-title {
+  font-size: 1.5rem !important;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.fc-button {
+  background: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  border-radius: 0.5rem !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease !important;
+}
+
+.fc-button:hover {
+  background: #0056b3 !important;
+  border-color: #0056b3 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
+}
+
+.fc-button:focus {
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}
+
+.fc-button-active {
+  background: #0056b3 !important;
+  border-color: #0056b3 !important;
+}
+
+.fc-daygrid-day {
+  transition: all 0.3s ease;
+}
+
+.fc-daygrid-day:hover {
+  background-color: rgba(13, 110, 253, 0.05);
+}
+
+.fc-daygrid-day-number {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.fc-day-today {
+  background-color: rgba(13, 110, 253, 0.1) !important;
+}
+
+.fc-day-today .fc-daygrid-day-number {
+  background: var(--primary-color);
+  color: white;
+  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Event Styling */
+.fc-event {
+  border-radius: 0.5rem !important;
+  border: none !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+}
+
+.fc-event:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.fc-event.confirmed {
+  background: linear-gradient(135deg, #198754 0%, #20c997 100%) !important;
+  color: white !important;
+}
+
+.fc-event.pending {
+  background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%) !important;
+  color: white !important;
+}
+
+.fc-event.cancelled {
+  background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%) !important;
+  color: white !important;
+}
+
+.fc-event.completed {
+  background: linear-gradient(135deg, #6f42c1 0%, #8b5cf6 100%) !important;
+  color: white !important;
+}
+
+/* Legend */
+.calendar-legend {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0.25rem;
+}
+
+.calendar-legend.confirmed {
+  background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+}
+
+.calendar-legend.pending {
+  background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+}
+
+.calendar-legend.cancelled {
+  background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+}
+
+.calendar-legend.completed {
+  background: linear-gradient(135deg, #6f42c1 0%, #8b5cf6 100%);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .fc-toolbar {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .fc-toolbar-chunk {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .calendar-controls .btn-group {
+    flex-wrap: wrap;
+  }
+}
+
+/* Loading Animation */
+.calendar-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 400px;
+}
+
+.calendar-loading .spinner-border {
+  width: 3rem;
+  height: 3rem;
+  color: var(--primary-color);
+}
+
+/* Tooltip Enhancement */
+.fc-event-title {
+  font-weight: 600;
+}
+
+.fc-event-time {
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+</style>
+{% endblock %}
+
+{% block fab %}
+<!-- Floating Action Button -->
+<button class="fab" onclick="showQuickActions()" title="Ações Rápidas">
+  <i class="bi bi-plus-lg"></i>
+</button>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let calendar;
+let currentEvents = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+  initializeCalendar();
+  setupEventListeners();
+  loadProfissionais();
+});
+
+function initializeCalendar() {
+  const calendarEl = document.getElementById('calendar');
+  
+  calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    locale: 'pt-br',
+    height: 'auto',
+    expandRows: true,
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+    },
+    buttonText: {
+      today: 'Hoje',
+      month: 'Mês',
+      week: 'Semana',
+      day: 'Dia',
+      list: 'Lista'
+    },
+    dayMaxEvents: true,
+    moreLinkClick: 'popover',
+    eventClick: function(info) {
+      showEventDetails(info.event);
+    },
+    eventDidMount: function(info) {
+      // Add custom styling based on status
+      const status = info.event.extendedProps.status;
+      if (status) {
+        info.el.classList.add(status.toLowerCase());
+      }
+      
+      // Add tooltip
+      const tooltip = new bootstrap.Tooltip(info.el, {
+        title: createEventTooltip(info.event),
+        placement: 'top',
+        trigger: 'hover',
+        html: true
+      });
+    },
+    events: function(fetchInfo, successCallback, failureCallback) {
+      // Show loading
+      showCalendarLoading();
+      
+      fetch('/api/eventos')
+        .then(response => response.json())
+        .then(data => {
+          currentEvents = data;
+          successCallback(data);
+          updateStats(data);
+          hideCalendarLoading();
+        })
+        .catch(error => {
+          console.error('Error fetching events:', error);
+          failureCallback(error);
+          hideCalendarLoading();
+          showToast('Erro ao carregar eventos', 'error');
+        });
+    },
+    loading: function(isLoading) {
+      if (isLoading) {
+        showCalendarLoading();
+      } else {
+        hideCalendarLoading();
+      }
+    }
+  });
+  
+  calendar.render();
+}
+
+function setupEventListeners() {
+  // Status filter
+  document.querySelectorAll('input[name="statusFilter"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+      filterEvents();
+    });
+  });
+  
+  // Professional filter
+  document.getElementById('profissionalFilter').addEventListener('change', function() {
+    filterEvents();
+  });
+  
+  // View buttons
+  document.getElementById('monthView').addEventListener('click', function() {
+    calendar.changeView('dayGridMonth');
+    updateViewButtons('monthView');
+  });
+  
+  document.getElementById('weekView').addEventListener('click', function() {
+    calendar.changeView('timeGridWeek');
+    updateViewButtons('weekView');
+  });
+  
+  document.getElementById('dayView').addEventListener('click', function() {
+    calendar.changeView('timeGridDay');
+    updateViewButtons('dayView');
+  });
+}
+
+function updateViewButtons(activeView) {
+  document.querySelectorAll('#monthView, #weekView, #dayView').forEach(btn => {
+    btn.classList.remove('btn-primary');
+    btn.classList.add('btn-outline-primary');
+  });
+  
+  document.getElementById(activeView).classList.remove('btn-outline-primary');
+  document.getElementById(activeView).classList.add('btn-primary');
+}
+
+function filterEvents() {
+  const statusFilter = document.querySelector('input[name="statusFilter"]:checked').value;
+  const profissionalFilter = document.getElementById('profissionalFilter').value;
+  
+  let filteredEvents = currentEvents;
+  
+  if (statusFilter) {
+    filteredEvents = filteredEvents.filter(event => event.extendedProps.status === statusFilter);
+  }
+  
+  if (profissionalFilter) {
+    filteredEvents = filteredEvents.filter(event => 
+      event.extendedProps.profissional && 
+      event.extendedProps.profissional.toLowerCase().includes(profissionalFilter.toLowerCase())
+    );
+  }
+  
+  calendar.removeAllEvents();
+  calendar.addEventSource(filteredEvents);
+}
+
+function loadProfissionais() {
+  // This would typically come from an API endpoint
+  const profissionais = ['Dr. João Silva', 'Dra. Maria Santos', 'Dr. Carlos Oliveira'];
+  
+  const select = document.getElementById('profissionalFilter');
+  profissionais.forEach(prof => {
+    const option = document.createElement('option');
+    option.value = prof;
+    option.textContent = prof;
+    select.appendChild(option);
+  });
+}
+
+function updateStats(events) {
+  const total = events.length;
+  const confirmados = events.filter(e => e.extendedProps.status === 'Confirmado').length;
+  const pendentes = events.filter(e => e.extendedProps.status === 'Agendado').length;
+  const cancelados = events.filter(e => e.extendedProps.status === 'Cancelado').length;
+  
+  document.getElementById('totalAgendamentos').textContent = total;
+  document.getElementById('confirmados').textContent = confirmados;
+  document.getElementById('pendentes').textContent = pendentes;
+  document.getElementById('cancelados').textContent = cancelados;
+}
+
+function showEventDetails(event) {
+  const status = event.extendedProps.status || 'Agendado';
+  const statusColors = {
+    'Confirmado': 'success',
+    'Agendado': 'warning',
+    'Cancelado': 'danger',
+    'Realizado': 'info'
+  };
+  
+  Swal.fire({
+    title: event.title,
+    html: `
+      <div class="text-start">
+        <p><strong>Data:</strong> ${event.start.toLocaleDateString('pt-BR')}</p>
+        <p><strong>Hora:</strong> ${event.start.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'})}</p>
+        <p><strong>Status:</strong> <span class="badge bg-${statusColors[status] || 'secondary'}">${status}</span></p>
+        ${event.extendedProps.profissional ? `<p><strong>Profissional:</strong> ${event.extendedProps.profissional}</p>` : ''}
+        ${event.extendedProps.servico ? `<p><strong>Serviço:</strong> ${event.extendedProps.servico}</p>` : ''}
+      </div>
+    `,
+    icon: 'info',
+    showCancelButton: true,
+    confirmButtonText: 'Editar',
+    cancelButtonText: 'Fechar',
+    showDenyButton: true,
+    denyButtonText: 'Cancelar Consulta'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Redirect to edit appointment
+      window.location.href = `/agenda/${event.id}/editar`;
+    } else if (result.isDenied) {
+      cancelarConsulta(event.id);
+    }
+  });
+}
+
+function createEventTooltip(event) {
+  const status = event.extendedProps.status || 'Agendado';
+  const statusColors = {
+    'Confirmado': 'success',
+    'Agendado': 'warning',
+    'Cancelado': 'danger',
+    'Realizado': 'info'
+  };
+  
+  return `
+    <div class="text-start">
+      <strong>${event.title}</strong><br>
+      <small class="text-muted">
+        ${event.start.toLocaleDateString('pt-BR')} às ${event.start.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'})}<br>
+        Status: <span class="badge bg-${statusColors[status] || 'secondary'}">${status}</span>
+      </small>
+    </div>
+  `;
+}
+
+function cancelarConsulta(eventId) {
+  Swal.fire({
+    title: 'Cancelar Consulta?',
+    text: 'Deseja realmente cancelar esta consulta?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#dc3545',
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: 'Sim, Cancelar!',
+    cancelButtonText: 'Não'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Here you would implement the actual cancellation
+      showToast('Consulta cancelada com sucesso!', 'success');
+      calendar.refetchEvents();
+    }
+  });
+}
+
+function exportarCalendario() {
+  Swal.fire({
+    title: 'Exportar Calendário',
+    text: 'Escolha o formato de exportação:',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'CSV',
+    cancelButtonText: 'Cancelar',
+    showDenyButton: true,
+    denyButtonText: 'PDF'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      window.location.href = '/exportar';
+    } else if (result.isDenied) {
+      showToast('Exportação PDF será implementada em breve!', 'info');
+    }
+  });
+}
+
+function showQuickActions() {
+  Swal.fire({
+    title: 'Ações Rápidas',
+    html: `
+      <div class="row g-3">
+        <div class="col-6">
+          <button class="btn btn-primary w-100 py-3" onclick="location.href='{{ url_for('agenda') }}'">
+            <i class="bi bi-calendar-plus fs-4 d-block mb-2"></i>
+            <strong>Novo Agendamento</strong>
+          </button>
+        </div>
+        <div class="col-6">
+          <button class="btn btn-success w-100 py-3" onclick="location.href='{{ url_for('pacientes') }}'">
+            <i class="bi bi-person-plus fs-4 d-block mb-2"></i>
+            <strong>Novo Paciente</strong>
+          </button>
+        </div>
+        <div class="col-6">
+          <button class="btn btn-info w-100 py-3" onclick="exportarCalendario()">
+            <i class="bi bi-download fs-4 d-block mb-2"></i>
+            <strong>Exportar</strong>
+          </button>
+        </div>
+        <div class="col-6">
+          <button class="btn btn-warning w-100 py-3" onclick="location.href='{{ url_for('dashboard') }}'">
+            <i class="bi bi-speedometer2 fs-4 d-block mb-2"></i>
+            <strong>Dashboard</strong>
+          </button>
+        </div>
+      </div>
+    `,
+    showConfirmButton: false,
+    showCloseButton: true,
+    width: '600px'
+  });
+}
+
+function showCalendarLoading() {
+  const calendarEl = document.getElementById('calendar');
+  if (!calendarEl.querySelector('.calendar-loading')) {
+    const loading = document.createElement('div');
+    loading.className = 'calendar-loading';
+    loading.innerHTML = '<div class="spinner-border" role="status"><span class="visually-hidden">Carregando...</span></div>';
+    calendarEl.appendChild(loading);
+  }
+}
+
+function hideCalendarLoading() {
+  const loading = document.querySelector('.calendar-loading');
+  if (loading) {
+    loading.remove();
+  }
+}
+
+// Auto-refresh calendar every 5 minutes
+setInterval(() => {
+  if (calendar) {
+    calendar.refetchEvents();
+  }
+}, 300000);
+</script>
+{% endblock %}

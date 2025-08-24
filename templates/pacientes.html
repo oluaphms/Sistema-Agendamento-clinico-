@@ -1,0 +1,543 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <!-- Formulário de Cadastro -->
+    <form method="POST" class="mb-4">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label for="nome" class="form-label">
+            <i class="bi bi-person me-2"></i>Nome Completo
+          </label>
+          <input 
+            type="text" 
+            class="form-control" 
+            id="nome" 
+            name="nome" 
+            placeholder="Digite o nome completo"
+            required
+          >
+        </div>
+            
+            <div class="col-md-6">
+              <label for="cpf" class="form-label">
+                <i class="bi bi-card-text me-2"></i>CPF
+              </label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="cpf" 
+                name="cpf" 
+                placeholder="000.000.000-00"
+                maxlength="14"
+                required
+              >
+            </div>
+            
+            <div class="col-md-6">
+              <label for="telefone" class="form-label">
+                <i class="bi bi-telephone me-2"></i>Telefone
+              </label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="telefone" 
+                name="telefone" 
+                placeholder="(11) 99999-9999"
+                required
+              >
+            </div>
+            
+            <div class="col-md-6">
+              <label for="email" class="form-label">
+                <i class="bi bi-envelope me-2"></i>E-mail
+              </label>
+              <input 
+                type="email" 
+                class="form-control" 
+                id="email" 
+                name="email" 
+                placeholder="email@exemplo.com"
+              >
+            </div>
+            
+            <div class="col-md-6">
+              <label for="data_nascimento" class="form-label">
+                <i class="bi bi-calendar me-2"></i>Data de Nascimento
+              </label>
+              <input 
+                type="date" 
+                class="form-control" 
+                id="data_nascimento" 
+                name="data_nascimento" 
+                required
+              >
+            </div>
+            
+            <div class="col-md-6">
+              <label for="categoria" class="form-label">
+                <i class="bi bi-tag me-2"></i>Categoria
+              </label>
+              <select class="form-select" id="categoria" name="categoria" required>
+                <option value="">Selecione...</option>
+                <option value="particular">Particular</option>
+                <option value="convenio">Convênio</option>
+                <option value="emergencia">Emergência</option>
+                <option value="estudante">Estudante</option>
+                <option value="idoso">Idoso</option>
+                <option value="gestante">Gestante</option>
+                <option value="crianca">Criança</option>
+                <option value="homem">Homem</option>
+                <option value="mulher">Mulher</option>
+              </select>
+            </div>
+            
+            <div class="col-md-6">
+              <label for="convenio" class="form-label">
+                <i class="bi bi-shield-check me-2"></i>Convênio
+              </label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="convenio" 
+                name="convenio" 
+                placeholder="Nome do convênio"
+              >
+            </div>
+            
+
+            
+            <div class="col-12">
+              <label for="observacoes" class="form-label">
+                <i class="bi bi-chat-text me-2"></i>Observações
+              </label>
+              <textarea 
+                class="form-control" 
+                id="observacoes" 
+                name="observacoes" 
+                rows="3" 
+                placeholder="Observações importantes sobre o paciente..."
+              ></textarea>
+            </div>
+            
+            <div class="col-12">
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-person-plus me-2"></i>
+                Cadastrar Paciente
+              </button>
+            </div>
+          </div>
+        </form>
+
+                <!-- Barra de Busca -->
+        <div class="row mb-4">
+          <div class="col-md-8">
+            <div class="input-group">
+              <input 
+                type="text" 
+                class="form-control" 
+                id="searchInput" 
+                placeholder="Buscar pacientes por nome, CPF, telefone ou email..."
+              >
+              <button class="btn btn-primary" onclick="executarBusca()" type="button" title="Buscar">
+                <i class="bi bi-search"></i>
+              </button>
+              <button class="btn btn-outline-secondary" onclick="limparFiltros()" type="button" title="Limpar busca">
+                <i class="bi bi-arrow-clockwise me-1"></i>Limpar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de Pacientes em Cards -->
+        <div class="row" id="pacientesGrid">
+          {% for p in pacientes %}
+          <div class="col-xl-4 col-lg-6 col-md-6 mb-4 paciente-card" 
+               data-nome="{{ p.nome|lower }}" 
+               data-cpf="{{ p.cpf|lower }}" 
+               data-telefone="{{ p.telefone|lower }}" 
+               data-email="{{ p.email|lower }}"
+               data-categoria="{{ p.categoria|lower }}">
+            <div class="card h-100">
+              <div class="card-header bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="d-flex align-items-center">
+                    <i class="bi bi-person-circle me-2 fs-4"></i>
+                    <h6 class="mb-0">{{ p.nome }}</h6>
+                  </div>
+                  <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-light" type="button" data-bs-toggle="dropdown">
+                      <i class="bi bi-three-dots-vertical"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" href="{{ url_for('prontuario', paciente_id=p.id) }}">
+                        <i class="bi bi-file-text me-2"></i>Ver Prontuário
+                      </a></li>
+                      <li><a class="dropdown-item" href="#" onclick="editarPaciente({{ p.id }})">
+                        <i class="bi bi-pencil me-2"></i>Editar
+                      </a></li>
+                      <li><a class="dropdown-item" href="#" onclick="agendarConsulta({{ p.id }})">
+                        <i class="bi bi-calendar-plus me-2"></i>Agendar Consulta
+                      </a></li>
+                      <li><hr class="dropdown-divider"></li>
+                      <li><a class="dropdown-item text-danger" href="#" onclick="excluirPaciente({{ p.id }}, '{{ p.nome }}')">
+                        <i class="bi bi-trash me-2"></i>Excluir
+                      </a></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="card-body">
+                {% if p.telefone %}
+                <div class="d-flex align-items-center mb-2">
+                  <i class="bi bi-telephone text-primary me-2"></i>
+                  <span class="text-muted">{{ p.telefone }}</span>
+                </div>
+                {% endif %}
+                
+                {% if p.email %}
+                <div class="d-flex align-items-center mb-2">
+                  <i class="bi bi-envelope text-info me-2"></i>
+                  <span class="text-muted">{{ p.email }}</span>
+                </div>
+                {% endif %}
+                
+                {% if p.data_nascimento %}
+                <div class="d-flex align-items-center mb-2">
+                  <i class="bi bi-calendar text-warning me-2"></i>
+                  <span class="text-muted">{{ p.data_nascimento }}</span>
+                </div>
+                {% endif %}
+                
+                {% if p.categoria %}
+                <div class="d-flex align-items-center mb-2">
+                  <i class="bi bi-tag text-success me-2"></i>
+                  <span class="badge bg-success bg-opacity-10 text-success">{{ p.categoria|title }}</span>
+                </div>
+                {% endif %}
+                
+                {% if p.convenio %}
+                <div class="d-flex align-items-center mb-2">
+                  <i class="bi bi-shield-check text-info me-2"></i>
+                  <span class="text-muted">{{ p.convenio }}</span>
+                </div>
+                {% endif %}
+                
+                {% if p.observacoes %}
+                <div class="alert alert-light border-0 p-2 mb-0">
+                  <small class="text-muted">
+                    <i class="bi bi-chat-text me-1"></i>
+                    {{ p.observacoes[:100] }}{% if p.observacoes|length > 100 %}...{% endif %}
+                  </small>
+                </div>
+                {% endif %}
+              </div>
+              
+              <div class="card-footer bg-transparent">
+                <div class="d-flex gap-2">
+                  <a href="{{ url_for('prontuario', paciente_id=p.id) }}" class="btn btn-outline-primary btn-sm flex-fill">
+                    <i class="bi bi-file-text me-1"></i>Prontuário
+                  </a>
+                  <button class="btn btn-outline-success btn-sm flex-fill" onclick="agendarConsulta({{ p.id }})">
+                    <i class="bi bi-calendar-plus me-1"></i>Agendar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Estado vazio -->
+        {% if not pacientes %}
+        <div class="text-center py-5">
+          <i class="bi bi-people text-muted" style="font-size: 4rem;"></i>
+          <h4 class="text-muted mt-3">Nenhum paciente encontrado</h4>
+          <p class="text-muted">Comece cadastrando seu primeiro paciente.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Edição -->
+<div class="modal fade" id="editModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-pencil me-2"></i>Editar Paciente
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="editFormContent">
+          <!-- Formulário de edição será carregado aqui -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Função para executar busca (chamada pelo botão da lupa)
+function executarBusca() {
+  console.log('🔍 Função executarBusca chamada');
+  filtrarPacientes();
+}
+
+// Função para filtrar pacientes
+function filtrarPacientes() {
+  console.log('🔍 Função filtrarPacientes chamada');
+  
+  try {
+    const searchInput = document.getElementById('searchInput');
+    if (!searchInput) {
+      console.error('❌ Campo de busca não encontrado');
+      return;
+    }
+    
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    console.log('🔍 Termo de busca:', searchTerm);
+    
+    if (!searchTerm) {
+      console.log('ℹ️ Campo vazio, mostrando todos os pacientes');
+      mostrarTodosPacientes();
+      return;
+    }
+    
+    const cards = document.querySelectorAll('.paciente-card');
+    console.log('📋 Cards encontrados:', cards.length);
+    
+    let visibleCount = 0;
+    
+    cards.forEach((card, index) => {
+      const nome = card.dataset.nome || '';
+      const cpf = card.dataset.cpf || '';
+      const telefone = card.dataset.telefone || '';
+      const email = card.dataset.email || '';
+      
+      console.log(`📋 Card ${index}: nome="${nome}", cpf="${cpf}", telefone="${telefone}", email="${email}"`);
+      
+      const matchesSearch = nome.includes(searchTerm) || 
+                           cpf.includes(searchTerm) || 
+                           telefone.includes(searchTerm) || 
+                           email.includes(searchTerm);
+      
+      if (matchesSearch) {
+        card.style.display = 'block';
+        visibleCount++;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+    
+    console.log(`✅ Pacientes visíveis: ${visibleCount}/${cards.length}`);
+    
+    // Mostrar mensagem se nenhum resultado for encontrado
+    if (visibleCount === 0) {
+      mostrarMensagemNenhumResultado();
+    } else {
+      ocultarMensagemNenhumResultado();
+    }
+  } catch (error) {
+    console.error('❌ Erro na função filtrarPacientes:', error);
+  }
+}
+
+// Função para mostrar todos os pacientes
+function mostrarTodosPacientes() {
+  const cards = document.querySelectorAll('.paciente-card');
+  cards.forEach(card => {
+    card.style.display = 'block';
+  });
+  ocultarMensagemNenhumResultado();
+}
+
+// Função para mostrar mensagem de nenhum resultado
+function mostrarMensagemNenhumResultado() {
+  let mensagem = document.getElementById('mensagemNenhumResultado');
+  if (!mensagem) {
+    mensagem = document.createElement('div');
+    mensagem.id = 'mensagemNenhumResultado';
+    mensagem.className = 'alert alert-info text-center mt-3';
+    mensagem.innerHTML = '<i class="bi bi-info-circle me-2"></i>Nenhum paciente encontrado com os critérios informados.';
+    
+    const grid = document.getElementById('pacientesGrid');
+    if (grid) {
+      grid.parentNode.insertBefore(mensagem, grid.nextSibling);
+    }
+  }
+  mensagem.style.display = 'block';
+}
+
+// Função para ocultar mensagem de nenhum resultado
+function ocultarMensagemNenhumResultado() {
+  const mensagem = document.getElementById('mensagemNenhumResultado');
+  if (mensagem) {
+    mensagem.style.display = 'none';
+  }
+}
+
+// Função para limpar filtros
+function limparFiltros() {
+  console.log('🧹 Função limparFiltros chamada');
+  
+  try {
+    const searchInput = document.getElementById('searchInput');
+    if (!searchInput) {
+      console.error('❌ Campo de busca não encontrado');
+      return;
+    }
+    
+    searchInput.value = '';
+    console.log('🧹 Campo de busca limpo');
+    
+    // Mostrar todos os pacientes
+    mostrarTodosPacientes();
+    
+    // Focar no campo de busca
+    searchInput.focus();
+    
+    console.log('✅ Filtros limpos com sucesso');
+  } catch (error) {
+    console.error('❌ Erro na função limparFiltros:', error);
+  }
+}
+
+// Função para editar paciente
+function editarPaciente(pacienteId) {
+  // Aqui você pode implementar a lógica para carregar os dados do paciente
+  // e abrir o modal de edição
+  const modal = new bootstrap.Modal(document.getElementById('editModal'));
+  modal.show();
+}
+
+// Função para agendar consulta
+function agendarConsulta(pacienteId) {
+  // Redirecionar para a página de agendamento
+  window.location.href = `/agenda?paciente_id=${pacienteId}`;
+}
+
+// Função para excluir paciente
+function excluirPaciente(pacienteId, nome) {
+  if (confirm(`Tem certeza que deseja excluir o paciente "${nome}"?`)) {
+    // Aqui você pode implementar a lógica para excluir o paciente
+    fetch(`/pacientes/${pacienteId}`, {
+      method: 'DELETE',
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload();
+      } else {
+        alert('Erro ao excluir paciente');
+      }
+    })
+    .catch(error => {
+      console.error('Erro:', error);
+      alert('Erro ao excluir paciente');
+    });
+  }
+}
+
+// Aplicar máscaras nos campos e inicializar funcionalidades
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('🚀 DOM carregado, inicializando funcionalidades...');
+  
+  try {
+    // Verificar se o campo de busca existe
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+      console.log('✅ Campo de busca encontrado e configurado');
+      
+      // Adicionar evento de busca ao pressionar Enter
+      searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          console.log('⌨️ Enter pressionado, executando busca');
+          executarBusca();
+        }
+      });
+    } else {
+      console.error('❌ Campo de busca não encontrado!');
+    }
+    
+    // Verificar se os cards de pacientes existem
+    const cards = document.querySelectorAll('.paciente-card');
+    console.log(`📋 Cards de pacientes encontrados: ${cards.length}`);
+    
+    // Máscara para CPF
+    const cpfInput = document.getElementById('cpf');
+    if (cpfInput) {
+      cpfInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        value = value.replace(/(\d{3})(\d)/, '$1.$2');
+        value = value.replace(/(\d{3})(\d)/, '$1.$2');
+        value = value.replace(/(\d)(\d{4})$/, '$1-$2');
+        e.target.value = value;
+      });
+    }
+    
+    // Máscara para telefone
+    const telefoneInput = document.getElementById('telefone');
+    if (telefoneInput) {
+      telefoneInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+        value = value.replace(/(\d)(\d{4})$/, '$1-$2');
+        e.target.value = value;
+      });
+    }
+    
+    console.log('✅ Inicialização concluída com sucesso');
+  } catch (error) {
+    console.error('❌ Erro durante a inicialização:', error);
+  }
+});
+</script>
+
+<style>
+.paciente-card .card {
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
+}
+
+.paciente-card .card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.paciente-card .card-header {
+  border-bottom: none;
+}
+
+.paciente-card .card-footer {
+  border-top: none;
+  background-color: transparent;
+}
+
+.badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .paciente-card {
+    margin-bottom: 1rem;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+  
+  .card-footer {
+    padding: 1rem;
+  }
+}
+</style>
+
+{% endblock %}

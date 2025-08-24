@@ -1,0 +1,438 @@
+{% extends "base.html" %}
+
+{% block title %}Gamificação - Sistema Clínica{% endblock %}
+
+{% block extra_css %}
+<style>
+    .gamification-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    .stats-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin-bottom: 1.5rem;
+        border-left: 4px solid #667eea;
+    }
+    
+    .level-progress {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+    
+    .progress-bar {
+        height: 20px;
+        border-radius: 10px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+    }
+    
+    .badge-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin-bottom: 1rem;
+        transition: transform 0.3s ease;
+    }
+    
+    .badge-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .badge-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .badge-rare { border-left: 4px solid #28a745; }
+    .badge-epic { border-left: 4px solid #6f42c1; }
+    .badge-legendary { border-left: 4px solid #fd7e14; }
+    
+    .leaderboard-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin-bottom: 1.5rem;
+    }
+    
+    .leaderboard-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        background: #f8f9fa;
+    }
+    
+    .leaderboard-position {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-right: 1rem;
+    }
+    
+    .position-1 { background: #ffd700; color: #333; }
+    .position-2 { background: #c0c0c0; color: #333; }
+    .position-3 { background: #cd7f32; color: white; }
+    .position-other { background: #6c757d; color: white; }
+    
+    .achievement-popup {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 1rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        z-index: 1000;
+        animation: slideIn 0.5s ease-out;
+    }
+    
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .quick-action-btn {
+        background: white;
+        border: 2px solid #667eea;
+        color: #667eea;
+        padding: 1rem;
+        border-radius: 10px;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .quick-action-btn:hover {
+        background: #667eea;
+        color: white;
+        transform: translateY(-2px);
+        text-decoration: none;
+    }
+    
+    .quick-action-icon {
+        font-size: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header da Gamificação -->
+<div class="gamification-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-4 mb-3">
+                    🏆 Sistema de Gamificação
+                </h1>
+                <p class="lead mb-0">
+                    Ganhe pontos, conquiste badges e suba no ranking!
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="text-center">
+                    <div class="h2 mb-0">{{ profile.level }}</div>
+                    <small>Nível Atual</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Ações Rápidas -->
+    <div class="quick-actions">
+        <a href="{{ url_for('gamification.profile') }}" class="quick-action-btn">
+            <div class="quick-action-icon">👤</div>
+            <div>Meu Perfil</div>
+        </a>
+        <a href="{{ url_for('gamification.leaderboard') }}" class="quick-action-btn">
+            <div class="quick-action-icon">🏅</div>
+            <div>Rankings</div>
+        </a>
+        <a href="{{ url_for('gamification.badges') }}" class="quick-action-btn">
+            <div class="quick-action-icon">🎖️</div>
+            <div>Badges</div>
+        </a>
+        {% if current_user.has_role('admin') %}
+        <a href="{{ url_for('gamification.admin_stats') }}" class="quick-action-btn">
+            <div class="quick-action-icon">📊</div>
+            <div>Estatísticas</div>
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="row">
+        <!-- Estatísticas do Usuário -->
+        <div class="col-lg-4">
+            <div class="stats-card">
+                <h4 class="mb-3">
+                    <i class="fas fa-user-circle me-2"></i>
+                    Meu Progresso
+                </h4>
+                
+                <div class="text-center mb-3">
+                    <div class="h1 text-primary mb-0">{{ profile.total_points }}</div>
+                    <small class="text-muted">Pontos Totais</small>
+                </div>
+                
+                <div class="level-progress">
+                    <div class="d-flex justify-content-between mb-2">
+                        <small>Nível {{ profile.level }}</small>
+                        <small>{{ profile.points_to_next_level }} pts para o próximo</small>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: {{ ((profile.total_points % 100) / 100) * 100 }}%"></div>
+                    </div>
+                </div>
+                
+                <div class="row text-center mt-3">
+                    <div class="col-6">
+                        <div class="h5 text-success mb-0">{{ profile.stats.appointments_attended }}</div>
+                        <small class="text-muted">Consultas</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h5 text-warning mb-0">{{ profile.stats.consecutive_attendance }}</div>
+                        <small class="text-muted">Sequência</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Badges Conquistados -->
+            <div class="stats-card">
+                <h5 class="mb-3">
+                    <i class="fas fa-trophy me-2"></i>
+                    Badges Conquistados
+                </h5>
+                
+                {% if profile.badges %}
+                    {% for badge in profile.badges[:3] %}
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="badge-icon me-2">{{ badge.icon }}</div>
+                        <div>
+                            <div class="fw-bold">{{ badge.name }}</div>
+                            <small class="text-muted">{{ badge.description }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if profile.badges|length > 3 %}
+                    <div class="text-center">
+                        <a href="{{ url_for('gamification.badges') }}" class="btn btn-outline-primary btn-sm">
+                            Ver todos ({{ profile.badges|length }})
+                        </a>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <p class="text-muted text-center mb-0">
+                        Nenhum badge conquistado ainda.
+                        <br>Continue se esforçando!
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Conteúdo Principal -->
+        <div class="col-lg-8">
+            <!-- Próximos Badges -->
+            <div class="stats-card">
+                <h5 class="mb-3">
+                    <i class="fas fa-target me-2"></i>
+                    Próximos Badges
+                </h5>
+                
+                {% if profile.next_badges %}
+                    <div class="row">
+                        {% for next_badge in profile.next_badges[:4] %}
+                        <div class="col-md-6 mb-3">
+                            <div class="badge-card badge-{{ next_badge.badge.rarity }}">
+                                <div class="badge-icon">{{ next_badge.badge.icon }}</div>
+                                <h6 class="mb-2">{{ next_badge.badge.name }}</h6>
+                                <p class="text-muted small mb-2">{{ next_badge.badge.description }}</p>
+                                
+                                <div class="progress mb-2" style="height: 8px;">
+                                    <div class="progress-bar" style="width: {{ next_badge.progress.percentage }}%"></div>
+                                </div>
+                                
+                                <small class="text-muted">
+                                    {{ next_badge.progress.current }}/{{ next_badge.progress.required }}
+                                    ({{ next_badge.progress.remaining }} restantes)
+                                </small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center mb-0">
+                        Parabéns! Você conquistou todos os badges disponíveis!
+                    </p>
+                {% endif %}
+            </div>
+            
+            <!-- Leaderboards -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="leaderboard-card">
+                        <h5 class="mb-3">
+                            <i class="fas fa-medal me-2"></i>
+                            Top Pacientes
+                        </h5>
+                        
+                        {% if leaderboards.patient %}
+                            {% for player in leaderboards.patient[:5] %}
+                            <div class="leaderboard-item">
+                                <div class="leaderboard-position position-{{ '1' if player.position == 1 else '2' if player.position == 2 else '3' if player.position == 3 else 'other' }}">
+                                    {{ player.position }}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold">{{ player.username }}</div>
+                                    <small class="text-muted">Nível {{ player.level }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="fw-bold text-primary">{{ player.points }}</div>
+                                    <small class="text-muted">pts</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted text-center mb-0">Nenhum paciente registrado ainda.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="leaderboard-card">
+                        <h5 class="mb-3">
+                            <i class="fas fa-user-md me-2"></i>
+                            Top Profissionais
+                        </h5>
+                        
+                        {% if leaderboards.professional %}
+                            {% for player in leaderboards.professional[:5] %}
+                            <div class="leaderboard-item">
+                                <div class="leaderboard-position position-{{ '1' if player.position == 1 else '2' if player.position == 2 else '3' if player.position == 3 else 'other' }}">
+                                    {{ player.position }}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold">{{ player.username }}</div>
+                                    <small class="text-muted">Nível {{ player.level }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="fw-bold text-primary">{{ player.points }}</div>
+                                    <small class="text-muted">pts</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted text-center mb-0">Nenhum profissional registrado ainda.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Popup de Conquista -->
+<div id="achievement-popup" class="achievement-popup" style="display: none;">
+    <div class="text-center">
+        <div class="h4 mb-2">🎉 Conquista Desbloqueada!</div>
+        <div id="achievement-message"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Verifica se há novos badges ou conquistas
+    checkForNewAchievements();
+    
+    // Atualiza dados a cada 30 segundos
+    setInterval(updateGamificationData, 30000);
+});
+
+function checkForNewAchievements() {
+    // Simula verificação de novas conquistas
+    // Em produção, isso seria feito via WebSocket ou polling
+    const hasNewAchievements = Math.random() < 0.1; // 10% de chance para demo
+    
+    if (hasNewAchievements) {
+        showAchievementPopup('Você conquistou um novo badge! 🏆');
+    }
+}
+
+function showAchievementPopup(message) {
+    const popup = document.getElementById('achievement-popup');
+    const messageEl = document.getElementById('achievement-message');
+    
+    messageEl.textContent = message;
+    popup.style.display = 'block';
+    
+    // Esconde após 5 segundos
+    setTimeout(() => {
+        popup.style.display = 'none';
+    }, 5000);
+}
+
+function updateGamificationData() {
+    // Atualiza dados via API
+    fetch('/gamification/api/profile')
+        .then(response => response.json())
+        .then(data => {
+            if (!data.error) {
+                // Atualiza elementos da página
+                updateProfileData(data);
+            }
+        })
+        .catch(error => console.error('Erro ao atualizar dados:', error));
+}
+
+function updateProfileData(profile) {
+    // Atualiza pontos totais
+    const totalPointsEl = document.querySelector('.h1.text-primary');
+    if (totalPointsEl) {
+        totalPointsEl.textContent = profile.total_points;
+    }
+    
+    // Atualiza nível
+    const levelEl = document.querySelector('.gamification-header .h2');
+    if (levelEl) {
+        levelEl.textContent = profile.level;
+    }
+    
+    // Atualiza progresso do nível
+    const progressBar = document.querySelector('.progress-bar');
+    if (progressBar) {
+        const progress = ((profile.total_points % 100) / 100) * 100;
+        progressBar.style.width = progress + '%';
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,634 @@
+{% extends "base.html" %}
+
+{% block title %}Notificações & WhatsApp - Sistema Clínica{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header da Página -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-whatsapp text-success me-2"></i>
+                Notificações & WhatsApp
+            </h1>
+            <p class="text-muted mb-0">Gerencie notificações automáticas e integração com WhatsApp</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary" onclick="testarConectividade()">
+                <i class="bi bi-wifi me-2"></i>
+                Testar Conexão
+            </button>
+            <button class="btn btn-primary" onclick="showQuickActions()">
+                <i class="bi bi-lightning me-2"></i>
+                Ações Rápidas
+            </button>
+        </div>
+    </div>
+
+    <!-- Cards de Estatísticas -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card card-gradient card-gradient-primary h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-white mb-1">Total Enviadas</h6>
+                            <h3 class="text-white mb-0" id="totalEnviadas">0</h3>
+                        </div>
+                        <div class="text-white">
+                            <i class="bi bi-whatsapp fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card card-gradient card-gradient-success h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-white mb-1">Taxa de Entrega</h6>
+                            <h3 class="text-white mb-0" id="taxaEntrega">0%</h3>
+                        </div>
+                        <div class="text-white">
+                            <i class="bi bi-check-circle fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card card-gradient card-gradient-info h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-white mb-1">Respostas</h6>
+                            <h3 class="text-white mb-0" id="totalRespostas">0</h3>
+                        </div>
+                        <div class="text-white">
+                            <i class="bi bi-chat-dots fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card card-gradient card-gradient-warning h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-white mb-1">Tarefas Ativas</h6>
+                            <h3 class="text-white mb-0" id="tarefasAtivas">0</h3>
+                        </div>
+                        <div class="text-white">
+                            <i class="bi bi-clock-history fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Abas de Navegação -->
+    <ul class="nav nav-tabs mb-4" id="notificacoesTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="configuracoes-tab" data-bs-toggle="tab" 
+                    data-bs-target="#configuracoes" type="button" role="tab">
+                <i class="bi bi-gear me-2"></i>
+                Configurações
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="templates-tab" data-bs-toggle="tab" 
+                    data-bs-target="#templates" type="button" role="tab">
+                <i class="bi bi-file-text me-2"></i>
+                Templates
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="historico-tab" data-bs-toggle="tab" 
+                    data-bs-target="#historico" type="button" role="tab">
+                <i class="bi bi-clock-history me-2"></i>
+                Histórico
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tarefas-tab" data-bs-toggle="tab" 
+                    data-bs-target="#tarefas" type="button" role="tab">
+                <i class="bi bi-calendar-check me-2"></i>
+                Tarefas Agendadas
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="webhook-tab" data-bs-toggle="tab" 
+                    data-bs-target="#webhook" type="button" role="tab">
+                <i class="bi bi-link-45deg me-2"></i>
+                Webhook
+            </button>
+        </li>
+    </ul>
+
+    <!-- Conteúdo das Abas -->
+    <div class="tab-content" id="notificacoesTabsContent">
+        <!-- Aba Configurações -->
+        <div class="tab-pane fade show active" id="configuracoes" role="tabpanel">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-gear me-2"></i>
+                                Configurações de Notificações
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="configForm">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">API WhatsApp</label>
+                                        <select class="form-select" id="apiType">
+                                            <option value="simulacao">Simulação (Desenvolvimento)</option>
+                                            <option value="twilio">Twilio WhatsApp API</option>
+                                            <option value="whatsapp_web">WhatsApp Web</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Status do Sistema</label>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="sistemaAtivo" checked>
+                                            <label class="form-check-label" for="sistemaAtivo">
+                                                Sistema de Notificações Ativo
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Lembretes 24h</label>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="lembrete24h" checked>
+                                            <label class="form-check-label" for="lembrete24h">
+                                                Enviar lembrete 24h antes
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Horário do Lembrete 24h</label>
+                                        <input type="time" class="form-control" id="horarioLembrete24h" value="18:00">
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Lembretes 1h</label>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="lembrete1h" checked>
+                                            <label class="form-check-label" for="lembrete1h">
+                                                Enviar lembrete 1h antes
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Lembretes Adicionais</label>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="lembreteAdicional" checked>
+                                            <label class="form-check-label" for="lembreteAdicional">
+                                                Enviar se não confirmar
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Resumo Diário Profissionais</label>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="resumoDiario" checked>
+                                            <label class="form-check-label" for="resumoDiario">
+                                                Enviar resumo diário
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Horário do Resumo</label>
+                                        <input type="time" class="form-control" id="horarioResumo" value="07:00">
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Telefone da Clínica</label>
+                                        <input type="tel" class="form-control" id="telefoneClinica" 
+                                               value="+55 11 99999-9999" placeholder="+55 11 99999-9999">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Nome da Clínica</label>
+                                        <input type="text" class="form-control" id="nomeClinica" 
+                                               value="Clínica Saúde Total" placeholder="Nome da Clínica">
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Endereço da Clínica</label>
+                                    <input type="text" class="form-control" id="enderecoClinica" 
+                                           value="Rua das Clínicas, 123 - Centro" placeholder="Endereço completo">
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-save me-2"></i>
+                                        Salvar Configurações
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="carregarConfiguracoes()">
+                                        <i class="bi bi-arrow-clockwise me-2"></i>
+                                        Recarregar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Informações do Sistema
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <strong>Status:</strong>
+                                <span class="badge bg-success" id="statusSistema">Ativo</span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Última Verificação:</strong>
+                                <span id="ultimaVerificacao">-</span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Próxima Limpeza:</strong>
+                                <span id="proximaLimpeza">-</span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Versão:</strong>
+                                <span>1.0.0</span>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-outline-primary btn-sm" onclick="iniciarAgendador()">
+                                    <i class="bi bi-play me-2"></i>
+                                    Iniciar Agendador
+                                </button>
+                                <button class="btn btn-outline-warning btn-sm" onclick="pararAgendador()">
+                                    <i class="bi bi-stop me-2"></i>
+                                    Parar Agendador
+                                </button>
+                                <button class="btn btn-outline-info btn-sm" onclick="limparHistorico()">
+                                    <i class="bi bi-trash me-2"></i>
+                                    Limpar Histórico
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aba Templates -->
+        <div class="tab-pane fade" id="templates" role="tabpanel">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-file-text me-2"></i>
+                        Templates de Mensagens
+                    </h5>
+                    <button class="btn btn-primary btn-sm" onclick="editarTemplate()">
+                        <i class="bi bi-pencil me-2"></i>
+                        Editar Template
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Tipo de Template</label>
+                                <select class="form-select" id="tipoTemplate">
+                                    <option value="confirmacao_agendamento">Confirmação de Agendamento</option>
+                                    <option value="lembrete_24h">Lembrete 24h</option>
+                                    <option value="lembrete_1h">Lembrete 1h</option>
+                                    <option value="agradecimento">Agradecimento</option>
+                                    <option value="lembrete_adicional">Lembrete Adicional</option>
+                                    <option value="sugestao_reagendamento">Sugestão de Reagendamento</option>
+                                    <option value="resumo_diario">Resumo Diário</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Status do Template</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="templateAtivo" checked>
+                                    <label class="form-check-label" for="templateAtivo">
+                                        Template Ativo
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Mensagem</label>
+                        <textarea class="form-control" id="conteudoTemplate" rows="10" readonly></textarea>
+                        <div class="form-text">
+                            <strong>Variáveis disponíveis:</strong> {nome_paciente}, {data}, {horario}, {profissional}, {especialidade}, {endereco_clinica}, {telefone_clinica}
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary" onclick="salvarTemplate()">
+                            <i class="bi bi-save me-2"></i>
+                            Salvar Template
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="restaurarTemplate()">
+                            <i class="bi bi-arrow-counterclockwise me-2"></i>
+                            Restaurar Original
+                        </button>
+                        <button class="btn btn-outline-info" onclick="testarTemplate()">
+                            <i class="bi bi-send me-2"></i>
+                            Testar Envio
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aba Histórico -->
+        <div class="tab-pane fade" id="historico" role="tabpanel">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-clock-history me-2"></i>
+                        Histórico de Notificações
+                    </h5>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-secondary btn-sm" onclick="exportarHistorico()">
+                            <i class="bi bi-download me-2"></i>
+                            Exportar
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="limparHistorico()">
+                            <i class="bi bi-trash me-2"></i>
+                            Limpar
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Filtrar por Tipo</label>
+                            <select class="form-select" id="filtroTipo">
+                                <option value="">Todos os tipos</option>
+                                <option value="confirmacao_agendamento">Confirmação</option>
+                                <option value="lembrete_24h">Lembrete 24h</option>
+                                <option value="lembrete_1h">Lembrete 1h</option>
+                                <option value="agradecimento">Agradecimento</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Filtrar por Status</label>
+                            <select class="form-select" id="filtroStatus">
+                                <option value="">Todos os status</option>
+                                <option value="enviada">Enviada</option>
+                                <option value="entregue">Entregue</option>
+                                <option value="falhou">Falhou</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Data Início</label>
+                            <input type="date" class="form-control" id="dataInicio">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Data Fim</label>
+                            <input type="date" class="form-control" id="dataFim">
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="tabelaHistorico">
+                            <thead>
+                                <tr>
+                                    <th>Data/Hora</th>
+                                    <th>Tipo</th>
+                                    <th>Destinatário</th>
+                                    <th>Status</th>
+                                    <th>Resposta</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="corpoHistorico">
+                                <!-- Dados carregados via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted">Mostrando <span id="totalRegistros">0</span> registros</span>
+                        </div>
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0" id="paginacaoHistorico">
+                                <!-- Paginação carregada via JavaScript -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aba Tarefas Agendadas -->
+        <div class="tab-pane fade" id="tarefas" role="tabpanel">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-calendar-check me-2"></i>
+                        Tarefas Agendadas
+                    </h5>
+                    <button class="btn btn-outline-primary btn-sm" onclick="atualizarTarefas()">
+                        <i class="bi bi-arrow-clockwise me-2"></i>
+                        Atualizar
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="tabelaTarefas">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Tipo</th>
+                                    <th>Próxima Execução</th>
+                                    <th>Status</th>
+                                    <th>Tentativas</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="corpoTarefas">
+                                <!-- Dados carregados via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aba Webhook -->
+        <div class="tab-pane fade" id="webhook" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-link-45deg me-2"></i>
+                        Configuração de Webhook
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label class="form-label">URL do Webhook</label>
+                                <input type="url" class="form-control" id="webhookUrl" 
+                                       placeholder="https://sua-clinica.com/webhook/whatsapp">
+                                <div class="form-text">
+                                    URL para receber mensagens e respostas do WhatsApp
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Status</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="webhookAtivo">
+                                    <label class="form-check-label" for="webhookAtivo">
+                                        Webhook Ativo
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Token de Segurança</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="webhookToken" 
+                                   placeholder="Token para validação de webhook">
+                            <button class="btn btn-outline-secondary" type="button" onclick="gerarToken()">
+                                <i class="bi bi-arrow-clockwise me-2"></i>
+                                Gerar
+                            </button>
+                        </div>
+                        <div class="form-text">
+                            Token para validar que as requisições são legítimas
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">URL de Teste</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="webhookTestUrl" readonly>
+                            <button class="btn btn-outline-info" type="button" onclick="copiarUrlTeste()">
+                                <i class="bi bi-clipboard me-2"></i>
+                                Copiar
+                            </button>
+                        </div>
+                        <div class="form-text">
+                            Use esta URL para testar o webhook
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary" onclick="salvarWebhook()">
+                            <i class="bi bi-save me-2"></i>
+                            Salvar Configuração
+                        </button>
+                        <button class="btn btn-outline-info" onclick="testarWebhook()">
+                            <i class="bi bi-play me-2"></i>
+                            Testar Webhook
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="verLogsWebhook()">
+                            <i class="bi bi-file-text me-2"></i>
+                            Ver Logs
+                        </button>
+                    </div>
+
+                    <hr>
+
+                    <div class="alert alert-info">
+                        <h6><i class="bi bi-info-circle me-2"></i>Como configurar o webhook:</h6>
+                        <ol class="mb-0">
+                            <li>Configure a URL do webhook no painel do Twilio ou WhatsApp Business</li>
+                            <li>Use o token de segurança para validação</li>
+                            <li>Teste o webhook usando a URL de teste</li>
+                            <li>Monitore os logs para verificar funcionamento</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Teste de Template -->
+<div class="modal fade" id="modalTesteTemplate" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Testar Template</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Telefone de Teste</label>
+                    <input type="tel" class="form-control" id="telefoneTeste" 
+                           placeholder="+55 11 99999-9999" value="+55 11 99999-9999">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Dados de Teste</label>
+                    <textarea class="form-control" id="dadosTeste" rows="4" readonly></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="enviarTeste()">
+                    <i class="bi bi-send me-2"></i>
+                    Enviar Teste
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-none" 
+     style="z-index: 9999;">
+    <div class="d-flex justify-content-center align-items-center h-100">
+        <div class="text-center text-white">
+            <div class="spinner-border spinner-border-lg mb-3" role="status">
+                <span class="visually-hidden">Carregando...</span>
+            </div>
+            <h5>Processando...</h5>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Notificações JavaScript -->
+<script src="/static/js/notificacoes.js"></script>
+{% endblock %}

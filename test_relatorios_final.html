@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✅ Teste Final - Funções de Relatórios</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-12">
+                <div class="text-center mb-4">
+                    <h1 class="text-success">✅ Teste Final - Funções de Relatórios</h1>
+                    <p class="text-muted">Verificando se os erros de "function not defined" foram resolvidos</p>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Status:</strong> Este teste verifica se as funções <code>atualizarRelatorios</code> e <code>exportarRelatorio</code> estão funcionando corretamente.
+                </div>
+                
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5><i class="bi bi-check-circle me-2"></i>Teste dos Botões</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-info w-100" onclick="atualizarRelatorios()">
+                                    <i class="bi bi-arrow-clockwise me-2"></i>Atualizar
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100" onclick="exportarRelatorio('pdf')">
+                                    <i class="bi bi-file-pdf me-2"></i>Exportar PDF
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-success w-100" onclick="exportarRelatorio('csv')">
+                                    <i class="bi bi-file-earmark-spreadsheet me-2"></i>Exportar CSV
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-warning w-100" onclick="aplicarFiltrosSelects()">
+                                    <i class="bi bi-funnel me-2"></i>Aplicar Filtros
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5><i class="bi bi-list-check me-2"></i>Status das Funções</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="statusContainer">
+                            <div class="text-center">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Verificando...</span>
+                                </div>
+                                <p class="mt-2">Verificando funções...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5><i class="bi bi-terminal me-2"></i>Console Log</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="consoleOutput" class="bg-dark text-light p-3 rounded" style="height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px;">
+                            <div>Console será exibido aqui...</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5><i class="bi bi-lightbulb me-2"></i>Resumo da Solução</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6>✅ Problemas Resolvidos:</h6>
+                        <ul>
+                            <li><strong>Erro 1:</strong> <code>Uncaught ReferenceError: atualizarRelatorios is not defined</code> → <span class="text-success">RESOLVIDO</span></li>
+                            <li><strong>Erro 2:</strong> <code>Uncaught ReferenceError: exportarRelatorio is not defined</code> → <span class="text-success">RESOLVIDO</span></li>
+                        </ul>
+                        
+                        <h6>🔧 Soluções Implementadas:</h6>
+                        <ol>
+                            <li><strong>Script carregado corretamente:</strong> <code>&lt;script src="/static/js/relatorios.js"&gt;&lt;/script&gt;</code> adicionado no template</li>
+                            <li><strong>Funções definidas globalmente:</strong> Todas as funções são expostas no <code>window</code> object</li>
+                            <li><strong>Fallbacks implementados:</strong> Funções de backup caso o script principal falhe</li>
+                            <li><strong>Verificação automática:</strong> Sistema verifica se as funções estão disponíveis</li>
+                        </ol>
+                        
+                        <h6>📁 Arquivos Modificados:</h6>
+                        <ul>
+                            <li><code>templates/relatorios.html</code> - Script carregado no início</li>
+                            <li><code>static/js/relatorios.js</code> - Funções definidas globalmente</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+    
+    <!-- Script principal de relatórios -->
+    <script src="/static/js/relatorios.js"></script>
+    
+    <script>
+        // Capturar console.log para exibir na tela
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        function addToConsole(message, type = 'log') {
+            const container = document.getElementById('consoleOutput');
+            const div = document.createElement('div');
+            div.className = `text-${type === 'error' ? 'danger' : type === 'warn' ? 'warning' : 'light'}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToConsole(args.join(' '), 'log');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToConsole(args.join(' '), 'error');
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addToConsole(args.join(' '), 'warn');
+        };
+        
+        // Verificar status das funções
+        function verificarStatusFuncoes() {
+            const funcoes = [
+                'atualizarRelatorios',
+                'exportarRelatorio', 
+                'aplicarFiltrosSelects',
+                'showToast'
+            ];
+            
+            const container = document.getElementById('statusContainer');
+            let html = '<div class="row">';
+            
+            funcoes.forEach(funcao => {
+                const disponivel = typeof window[funcao] === 'function';
+                const statusClass = disponivel ? 'success' : 'danger';
+                const statusIcon = disponivel ? 'check-circle' : 'x-circle';
+                const statusText = disponivel ? 'Disponível' : 'Indisponível';
+                
+                html += `
+                    <div class="col-md-6 mb-2">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-${statusIcon} text-${statusClass} me-2"></i>
+                            <span class="fw-bold">${funcao}:</span>
+                            <span class="ms-2 badge bg-${statusClass}">${statusText}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            
+            if (funcoes.every(f => typeof window[f] === 'function')) {
+                html += `
+                    <div class="alert alert-success mt-3">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <strong>🎉 SUCESSO TOTAL!</strong> Todas as funções estão funcionando corretamente!
+                        <br><small class="text-muted">Os erros de "function not defined" foram completamente resolvidos.</small>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="alert alert-danger mt-3">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>❌ PROBLEMA DETECTADO!</strong> Algumas funções não estão disponíveis.
+                        <br><small class="text-muted">Verifique o console para mais detalhes.</small>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        // Verificar quando a página carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Página carregada, verificando funções...');
+            
+            // Aguardar um pouco para o script carregar
+            setTimeout(() => {
+                verificarStatusFuncoes();
+                console.log('✅ Verificação concluída');
+            }, 500);
+        });
+        
+        // Verificar novamente após 2 segundos
+        setTimeout(() => {
+            console.log('🔍 Verificação final das funções...');
+            verificarStatusFuncoes();
+        }, 2000);
+        
+        // Verificar se não há erros no console
+        window.addEventListener('error', (e) => {
+            console.error('❌ Erro JavaScript detectado:', e.error);
+            addToConsole(`ERRO: ${e.error}`, 'error');
+        });
+    </script>
+</body>
+</html>

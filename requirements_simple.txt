@@ -1,0 +1,14 @@
+# Dependências essenciais para o sistema funcionar
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+Werkzeug==2.3.7
+
+# Dependências básicas que não requerem compilação
+Flask-CORS==4.0.0
+python-dotenv==1.0.0
+email-validator==2.1.0
+python-dateutil==2.8.2
+Pillow==10.1.0
+
+# Para relatórios e exportação
+reportlab==4.0.4

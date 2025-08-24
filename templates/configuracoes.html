@@ -1,0 +1,426 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="configuracoes-sistema">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <!-- Título removido -->
+      <p class="text-muted">Configure as funcionalidades e parâmetros do sistema clínico.</p>
+    </div>
+  </div>
+
+  <!-- Configurações Gerais -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-sliders text-primary"></i> Configurações Gerais
+          </h5>
+        </div>
+        <div class="card-body">
+          <form id="configGeralForm">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="modoSistema" class="form-label">Modo do Sistema</label>
+                <select class="form-select" id="modoSistema">
+                  <option value="desenvolvimento">Desenvolvimento</option>
+                  <option value="producao">Produção</option>
+                  <option value="teste">Teste</option>
+                </select>
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label for="idiomaSistema" class="form-label">Idioma</label>
+                <select class="form-select" id="idiomaSistema">
+                  <option value="pt-br">Português (Brasil)</option>
+                  <option value="en">English</option>
+                  <option value="es">Español</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="fusoHorario" class="form-label">Fuso Horário</label>
+                <select class="form-select" id="fusoHorario">
+                  <option value="America/Sao_Paulo">São Paulo (GMT-3)</option>
+                  <option value="America/Manaus">Manaus (GMT-4)</option>
+                  <option value="America/Belem">Belém (GMT-3)</option>
+                </select>
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label for="formatoData" class="form-label">Formato de Data</label>
+                <select class="form-select" id="formatoData">
+                  <option value="dd/mm/yyyy">DD/MM/AAAA</option>
+                  <option value="mm/dd/yyyy">MM/DD/AAAA</option>
+                  <option value="yyyy-mm-dd">AAAA-MM-DD</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="temaSistema" class="form-label">Tema</label>
+                <select class="form-select" id="temaSistema">
+                  <option value="auto">Automático</option>
+                  <option value="light">Claro</option>
+                  <option value="dark">Escuro</option>
+                </select>
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label for="tamanhoFonte" class="form-label">Tamanho da Fonte</label>
+                <select class="form-select" id="tamanhoFonte">
+                  <option value="small">Pequeno</option>
+                  <option value="medium">Médio</option>
+                  <option value="large">Grande</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="tempoSessao" class="form-label">Tempo de Sessão (horas)</label>
+                <input type="number" class="form-control" id="tempoSessao" value="8" min="1" max="24">
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label for="nivelLog" class="form-label">Nível de Log</label>
+                <select class="form-select" id="nivelLog">
+                  <option value="debug">Debug</option>
+                  <option value="info">Info</option>
+                  <option value="warning">Warning</option>
+                  <option value="error">Error</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="d-flex justify-content-end">
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i> Salvar Configurações Gerais
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dados da Clínica -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-building text-success"></i> Dados da Clínica
+          </h5>
+        </div>
+        <div class="card-body">
+          <form id="configClinicaForm">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="nomeClinica" class="form-label">Nome da Clínica</label>
+                <input type="text" class="form-control" id="nomeClinica" value="Clínica Saúde Total">
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label for="cnpjClinica" class="form-label">CNPJ</label>
+                <input type="text" class="form-control" id="cnpjClinica" placeholder="00.000.000/0000-00">
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="telefoneClinica" class="form-label">Telefone</label>
+                <input type="text" class="form-control" id="telefoneClinica" value="+55 11 99999-9999">
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label for="emailClinica" class="form-label">Email</label>
+                <input type="email" class="form-control" id="emailClinica" placeholder="contato@clinica.com">
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-12 mb-3">
+                <label for="enderecoClinica" class="form-label">Endereço</label>
+                <input type="text" class="form-control" id="enderecoClinica" value="Rua das Clínicas, 123 - Centro">
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label for="cidadeClinica" class="form-label">Cidade</label>
+                <input type="text" class="form-control" id="cidadeClinica" value="São Paulo">
+              </div>
+              
+              <div class="col-md-4 mb-3">
+                <label for="estadoClinica" class="form-label">Estado</label>
+                <select class="form-select" id="estadoClinica">
+                  <option value="SP" selected>São Paulo</option>
+                  <option value="RJ">Rio de Janeiro</option>
+                  <option value="MG">Minas Gerais</option>
+                  <option value="RS">Rio Grande do Sul</option>
+                </select>
+              </div>
+              
+              <div class="col-md-4 mb-3">
+                <label for="cepClinica" class="form-label">CEP</label>
+                <input type="text" class="form-control" id="cepClinica" placeholder="00000-000">
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="horarioAbertura" class="form-label">Horário de Abertura</label>
+                <input type="time" class="form-control" id="horarioAbertura" value="08:00">
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label for="horarioFechamento" class="form-label">Horário de Fechamento</label>
+                <input type="time" class="form-control" id="horarioFechamento" value="18:00">
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-12">
+                <label class="form-label">Dias de Funcionamento</label>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="segunda" checked>
+                  <label class="form-check-label" for="segunda">Segunda</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="terca" checked>
+                  <label class="form-check-label" for="terca">Terça</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="quarta" checked>
+                  <label class="form-check-label" for="quarta">Quarta</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="quinta" checked>
+                  <label class="form-check-label" for="quinta">Quinta</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="sexta" checked>
+                  <label class="form-check-label" for="sexta">Sexta</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="sabado">
+                  <label class="form-check-label" for="sabado">Sábado</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="domingo">
+                  <label class="form-check-label" for="domingo">Domingo</label>
+                </div>
+              </div>
+            </div>
+            
+            <div class="d-flex justify-content-end">
+              <button type="submit" class="btn btn-success">
+                <i class="bi bi-save"></i> Salvar Dados da Clínica
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Configurações de Backup -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-cloud-arrow-up text-warning"></i> Configurações de Backup
+          </h5>
+        </div>
+        <div class="card-body">
+          <form id="configBackupForm">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="frequenciaBackup" class="form-label">Frequência de Backup</label>
+                <select class="form-select" id="frequenciaBackup">
+                  <option value="diario">Diário</option>
+                  <option value="semanal">Semanal</option>
+                  <option value="mensal">Mensal</option>
+                </select>
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label for="horarioBackup" class="form-label">Horário do Backup</label>
+                <input type="time" class="form-control" id="horarioBackup" value="02:00">
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="retencaoBackup" class="form-label">Retenção (dias)</label>
+                <input type="number" class="form-control" id="retencaoBackup" value="30" min="7" max="365">
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label for="compressaoBackup" class="form-check-label">
+                  <input class="form-check-input" type="checkbox" id="compressaoBackup" checked>
+                  Comprimir Backups
+                </label>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="backupNuvem" class="form-check-label">
+                  <input class="form-check-input" type="checkbox" id="backupNuvem">
+                  Backup na Nuvem
+                </label>
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label for="notificacaoBackup" class="form-check-label">
+                  <input class="form-check-input" type="checkbox" id="notificacaoBackup" checked>
+                  Notificações de Backup
+                </label>
+              </div>
+            </div>
+            
+            <div class="d-flex justify-content-end">
+              <button type="submit" class="btn btn-warning">
+                <i class="bi bi-save"></i> Salvar Configurações de Backup
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sistema de Backup -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-database text-info"></i> Sistema de Backup
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <button type="button" class="btn btn-info btn-lg w-100" onclick="window.configuracoesSistema.executarBackupManual()">
+                <i class="bi bi-cloud-arrow-up"></i> Executar Backup Manual
+              </button>
+              <div class="form-text">Cria um backup imediato do banco de dados</div>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              <button type="button" class="btn btn-secondary btn-lg w-100" onclick="window.configuracoesSistema.verHistoricoBackups()">
+                <i class="bi bi-clock-history"></i> Ver Histórico de Backups
+              </button>
+              <div class="form-text">Visualiza todos os backups realizados</div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <!-- Botão Restaurar removido por segurança -->
+              <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle"></i>
+                <strong>Restauração de Backup:</strong> Função temporariamente desabilitada por segurança
+              </div>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              <button type="button" class="btn btn-success btn-lg w-100" onclick="window.configuracoesSistema.verificarStatusSistema()">
+                <i class="bi bi-check-circle"></i> Verificar Status do Sistema
+              </button>
+              <div class="form-text">Verifica a integridade do sistema</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Histórico de Backups -->
+  <div class="row mb-4" id="historicoBackups" style="display: none;">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-clock-history text-secondary"></i> Histórico de Backups
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Data/Hora</th>
+                  <th>Arquivo</th>
+                  <th>Tamanho</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaBackups">
+                <!-- Preenchido via JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay d-none">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Carregando...</span>
+  </div>
+</div>
+
+<!-- Incluir JavaScript -->
+<script src="{{ url_for('static', filename='js/configuracoes.js') }}"></script>
+
+<style>
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loading-overlay.d-none {
+  display: none !important;
+}
+
+.configuracoes-sistema .card {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.configuracoes-sistema .card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.configuracoes-sistema .btn-lg {
+  padding: 1rem 1.5rem;
+  font-size: 1.1rem;
+}
+
+.configuracoes-sistema .form-check-inline {
+  margin-right: 1rem;
+}
+</style>
+{% endblock %}

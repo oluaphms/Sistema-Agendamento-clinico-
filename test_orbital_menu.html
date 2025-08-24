@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teste - Menu Orbital</title>
+  
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
+  <!-- CSS do Menu Orbital -->
+  <link rel="stylesheet" href="/static/css/live_menu.css">
+  
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    .test-header {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      padding: 2rem;
+      text-align: center;
+      color: white;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .test-title {
+      font-size: 3rem;
+      font-weight: 700;
+      margin: 0;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .test-subtitle {
+      font-size: 1.2rem;
+      margin: 1rem 0 0 0;
+      opacity: 0.9;
+    }
+    
+    .test-content {
+      padding: 3rem;
+      color: white;
+      text-align: center;
+    }
+    
+    .test-info {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 2rem;
+      margin: 2rem auto;
+      max-width: 800px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .test-info h3 {
+      margin-top: 0;
+      color: #ffd700;
+    }
+    
+    .test-controls {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin: 2rem 0;
+      flex-wrap: wrap;
+    }
+    
+    .test-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+      backdrop-filter: blur(10px);
+    }
+    
+    .test-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      border-color: rgba(255, 255, 255, 0.5);
+      transform: translateY(-2px);
+    }
+    
+    .test-btn:active {
+      transform: translateY(0);
+    }
+    
+    .test-features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+    
+    .feature-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 1.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      text-align: left;
+    }
+    
+    .feature-icon {
+      font-size: 2rem;
+      color: #ffd700;
+      margin-bottom: 1rem;
+    }
+    
+    .feature-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin: 0 0 0.5rem 0;
+    }
+    
+    .feature-desc {
+      margin: 0;
+      opacity: 0.9;
+      line-height: 1.5;
+    }
+    
+    .test-instructions {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 15px;
+      padding: 1.5rem;
+      margin: 2rem auto;
+      max-width: 600px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .test-instructions h4 {
+      color: #ffd700;
+      margin-top: 0;
+    }
+    
+    .test-instructions ul {
+      text-align: left;
+      padding-left: 1.5rem;
+    }
+    
+    .test-instructions li {
+      margin: 0.5rem 0;
+      opacity: 0.9;
+    }
+    
+    @media (max-width: 768px) {
+      .test-title {
+        font-size: 2rem;
+      }
+      
+      .test-content {
+        padding: 2rem 1rem;
+      }
+      
+      .test-controls {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .test-btn {
+        width: 100%;
+        max-width: 300px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="test-header">
+    <h1 class="test-title">🚀 Menu Orbital</h1>
+    <p class="test-subtitle">Sistema de Navegação Circular 3D - Demonstração Interativa</p>
+  </div>
+  
+  <div class="test-content">
+    <div class="test-info">
+      <h3>✨ Funcionalidades Principais</h3>
+      <p>O Menu Orbital é uma experiência de navegação revolucionária que combina design 3D, animações fluidas e interatividade avançada.</p>
+    </div>
+    
+    <div class="test-controls">
+      <button class="test-btn" onclick="openOrbitalMenu()">
+        <i class="bi bi-play-circle"></i> Abrir Menu Orbital
+      </button>
+      <button class="test-btn" onclick="toggleAutoRotation()">
+        <i class="bi bi-arrow-clockwise"></i> Toggle Rotação
+      </button>
+      <button class="test-btn" onclick="resetRotation()">
+        <i class="bi bi-arrow-counterclockwise"></i> Resetar Rotação
+      </button>
+      <button class="test-btn" onclick="showInstructions()">
+        <i class="bi bi-info-circle"></i> Instruções
+      </button>
+    </div>
+    
+    <div class="test-features">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="bi bi-phone"></i>
+        </div>
+        <h4 class="feature-title">Touch & Mouse</h4>
+        <p class="feature-desc">Controle total com gestos touch, mouse e roda do mouse para uma experiência fluida em qualquer dispositivo.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="bi bi-soundwave"></i>
+        </div>
+        <h4 class="feature-title">Sons Interativos</h4>
+        <p class="feature-desc">Feedback sonoro para todas as ações: abertura, fechamento, navegação e interações.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="bi bi-stars"></i>
+        </div>
+        <h4 class="feature-title">Partículas Animadas</h4>
+        <p class="feature-desc">Efeito galáxia com partículas flutuantes que criam uma atmosfera mágica e envolvente.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="bi bi-arrows-move"></i>
+        </div>
+        <h4 class="feature-title">Rotação 3D</h4>
+        <p class="feature-desc">Sistema de rotação orbital com efeitos 3D profundos e animações suaves.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="bi bi-keyboard"></i>
+        </div>
+        <h4 class="feature-title">Atalhos de Teclado</h4>
+        <p class="feature-desc">Controles rápidos: ESC para fechar, ESPAÇO para toggle rotação, R para resetar.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="bi bi-phone-flip"></i>
+        </div>
+        <h4 class="feature-title">Totalmente Responsivo</h4>
+        <p class="feature-desc">Adapta-se perfeitamente a todos os tamanhos de tela, desde mobile até desktop.</p>
+      </div>
+    </div>
+    
+    <div class="test-instructions" id="instructions" style="display: none;">
+             <h4>🎮 Como Usar o Menu Orbital</h4>
+       <ul>
+                   <li><strong>Clique no botão do cabeçalho (☰)</strong> para abrir o menu orbital</li>
+        <li><strong>Arraste com o mouse</strong> para girar a órbita dos ícones</li>
+        <li><strong>Use a roda do mouse</strong> para rotação mais precisa</li>
+        <li><strong>Toque e arraste</strong> em dispositivos touch para rotação</li>
+        <li><strong>Clique em um ícone</strong> para navegar para a página correspondente</li>
+        <li><strong>Pressione ESC</strong> para fechar o menu rapidamente</li>
+        <li><strong>Pressione ESPAÇO</strong> para alternar rotação automática</li>
+        <li><strong>Pressione R</strong> para resetar a rotação</li>
+      </ul>
+      
+      <h4>🌟 Recursos Especiais</h4>
+      <ul>
+        <li>Avatar do usuário no centro com status online/offline</li>
+        <li>Partículas animadas criando efeito galáxia</li>
+        <li>Sons suaves para todas as interações</li>
+        <li>Efeitos 3D com profundidade e perspectiva</li>
+        <li>Animações de entrada e saída fluidas</li>
+        <li>Design adaptativo para todos os dispositivos</li>
+      </ul>
+    </div>
+  </div>
+  
+  <!-- Menu Orbital -->
+  <div class="orbital-menu-overlay" id="orbitalMenuOverlay"></div>
+
+<div class="orbital-menu" id="orbitalMenu">
+  <!-- Círculo Central com Avatar do Usuário -->
+  <div class="orbital-center" id="orbitalCenter">
+    <div class="user-avatar-container">
+      <div class="user-avatar" id="userAvatar">
+        <img src="/static/icons/default-avatar.svg" alt="Usuário" id="avatarImage">
+        <div class="status-indicator" id="statusIndicator"></div>
+      </div>
+      <div class="user-info">
+        <h4 class="user-name" id="userName">Usuário</h4>
+        <span class="user-role" id="userRole">Recepção</span>
+      </div>
+    </div>
+    
+    <!-- Botão de Fechar Menu -->
+    <button class="close-menu-btn" id="closeMenuBtn" title="Fechar Menu">
+      <i class="bi bi-x-lg"></i>
+    </button>
+  </div>
+
+  <!-- Ícones Orbitando -->
+  <div class="orbital-items" id="orbitalItems">
+    <!-- Dashboard -->
+    <div class="orbital-item" data-route="dashboard" data-url="/dashboard">
+      <div class="item-icon">
+        <i class="bi bi-speedometer2"></i>
+      </div>
+      <div class="item-label">Dashboard</div>
+      <div class="item-glow"></div>
+    </div>
+
+    <!-- Pacientes -->
+    <div class="orbital-item" data-route="patients" data-url="/pacientes">
+      <div class="item-icon">
+        <i class="bi bi-people"></i>
+      </div>
+      <div class="item-label">Pacientes</div>
+      <div class="item-glow"></div>
+    </div>
+
+    <!-- Profissionais -->
+    <div class="orbital-item" data-route="professionals" data-url="/profissionais">
+      <div class="item-icon">
+        <i class="bi bi-person-badge"></i>
+      </div>
+      <div class="item-label">Profissionais</div>
+      <div class="item-glow"></div>
+    </div>
+
+    <!-- Agendamentos -->
+    <div class="orbital-item" data-route="appointments" data-url="/agenda">
+      <div class="item-icon">
+        <i class="bi bi-calendar-event"></i>
+      </div>
+      <div class="item-label">Agendamentos</div>
+      <div class="item-glow"></div>
+    </div>
+
+    <!-- Serviços -->
+    <div class="orbital-item" data-route="services" data-url="/servicos">
+      <div class="item-icon">
+        <i class="bi bi-tools"></i>
+      </div>
+      <div class="item-label">Serviços</div>
+      <div class="item-glow"></div>
+    </div>
+
+    <!-- Relatórios -->
+    <div class="orbital-item" data-route="reports" data-url="/relatorios">
+      <div class="item-icon">
+        <i class="bi bi-graph-up"></i>
+      </div>
+      <div class="item-label">Relatórios</div>
+      <div class="item-glow"></div>
+    </div>
+
+    <!-- Configurações -->
+    <div class="orbital-item" data-route="notifications" data-url="/configuracoes">
+      <div class="item-icon">
+        <i class="bi bi-gear"></i>
+      </div>
+      <div class="item-label">Configurações</div>
+      <div class="item-glow"></div>
+    </div>
+
+    <!-- Sobre -->
+    <div class="orbital-item" data-route="about" data-url="/sobre">
+      <div class="item-icon">
+        <i class="bi bi-info-circle"></i>
+      </div>
+      <div class="item-label">Sobre</div>
+      <div class="item-glow"></div>
+    </div>
+
+         <!-- Sair - Agora está no cabeçalho -->
+  </div>
+
+  <!-- Partículas de Fundo -->
+  <div class="particles-container" id="particlesContainer">
+    <div class="particle" style="--delay: 0s"></div>
+    <div class="particle" style="--delay: 0.5s"></div>
+    <div class="particle" style="--delay: 1s"></div>
+    <div class="particle" style="--delay: 1.5s"></div>
+    <div class="particle" style="--delay: 2s"></div>
+    <div class="particle" style="--delay: 2.5s"></div>
+    <div class="particle" style="--delay: 3s"></div>
+    <div class="particle" style="--delay: 3.5s"></div>
+    <div class="particle" style="--delay: 4s"></div>
+    <div class="particle" style="--delay: 4.5s"></div>
+    <div class="particle" style="--delay: 5s"></div>
+    <div class="particle" style="--delay: 5.5s"></div>
+  </div>
+</div>
+
+<!-- Botão do Menu Orbital agora está no cabeçalho -->
+  
+  <!-- JavaScript do Menu Orbital -->
+  <script src="/static/js/live_menu.js"></script>
+  
+  <script>
+    // Funções de teste
+    function openOrbitalMenu() {
+      if (window.orbitalMenu) {
+        window.orbitalMenu.openMenu();
+      }
+    }
+    
+    function toggleAutoRotation() {
+      if (window.orbitalMenu) {
+        window.orbitalMenu.toggleAutoRotation();
+      }
+    }
+    
+    function resetRotation() {
+      if (window.orbitalMenu) {
+        window.orbitalMenu.resetRotation();
+      }
+    }
+    
+    function showInstructions() {
+      const instructions = document.getElementById('instructions');
+      if (instructions.style.display === 'none') {
+        instructions.style.display = 'block';
+        instructions.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        instructions.style.display = 'none';
+      }
+    }
+    
+    // Mostrar instruções automaticamente após 3 segundos
+    setTimeout(() => {
+      showInstructions();
+    }, 3000);
+    
+    // Adicionar efeitos de entrada
+    document.addEventListener('DOMContentLoaded', () => {
+      const elements = document.querySelectorAll('.feature-card, .test-info, .test-controls');
+      elements.forEach((el, index) => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(30px)';
+        el.style.transition = 'all 0.6s ease';
+        
+        setTimeout(() => {
+          el.style.opacity = '1';
+          el.style.transform = 'translateY(0)';
+        }, index * 200);
+      });
+    });
+  </script>
+</body>
+</html>

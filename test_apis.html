@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste das APIs de Relatórios</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .test-success { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .test-error { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .test-warning { background-color: #fff3cd; border: 1px solid #ffeaa7; color: #856404; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">🧪 Teste das APIs de Relatórios</h1>
+        
+        <div class="test-section">
+            <h3>1. Teste da API de Estatísticas</h3>
+            <div class="mb-3">
+                <button class="btn btn-primary" onclick="testarEstatisticas()">Testar Estatísticas</button>
+                <button class="btn btn-info" onclick="testarEstatisticasComFiltros()">Testar com Filtros</button>
+            </div>
+            <div id="estatisticasResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>2. Teste da API de Filtros</h3>
+            <div class="mb-3">
+                <button class="btn btn-primary" onclick="testarFiltros()">Testar Filtros</button>
+            </div>
+            <div id="filtrosResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>3. Teste da API de Agendamentos por Dia</h3>
+            <div class="mb-3">
+                <button class="btn btn-primary" onclick="testarAgendamentosPorDia()">Testar Agendamentos</button>
+            </div>
+            <div id="agendamentosResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>4. Resumo dos Testes</h3>
+            <div id="summary"></div>
+        </div>
+    </div>
+
+    <script>
+        class APITester {
+            constructor() {
+                this.results = [];
+            }
+
+            async testarEstatisticas() {
+                try {
+                    const response = await fetch('/api/relatorios/estatisticas?periodo=30');
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.addResult('estatisticas', 'success', '✅ API de Estatísticas funcionando!');
+                        this.mostrarEstatisticas(data.estatisticas);
+                    } else {
+                        this.addResult('estatisticas', 'error', `❌ Erro na API: ${data.error}`);
+                    }
+                } catch (error) {
+                    this.addResult('estatisticas', 'error', `❌ Erro de conexão: ${error.message}`);
+                }
+            }
+
+            async testarEstatisticasComFiltros() {
+                try {
+                    const response = await fetch('/api/relatorios/estatisticas?periodo=7&profissional=1');
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.addResult('estatisticas', 'success', '✅ API de Estatísticas com filtros funcionando!');
+                        this.mostrarEstatisticas(data.estatisticas);
+                    } else {
+                        this.addResult('estatisticas', 'error', `❌ Erro na API com filtros: ${data.error}`);
+                    }
+                } catch (error) {
+                    this.addResult('estatisticas', 'error', `❌ Erro de conexão: ${error.message}`);
+                }
+            }
+
+            async testarFiltros() {
+                try {
+                    const response = await fetch('/api/relatorios/filtros');
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.addResult('filtros', 'success', `✅ API de Filtros funcionando! Profissionais: ${data.profissionais.length}, Serviços: ${data.servicos.length}`);
+                        this.mostrarFiltros(data);
+                    } else {
+                        this.addResult('filtros', 'error', `❌ Erro na API de filtros: ${data.error}`);
+                    }
+                } catch (error) {
+                    this.addResult('filtros', 'error', `❌ Erro de conexão: ${error.message}`);
+                }
+            }
+
+            async testarAgendamentosPorDia() {
+                try {
+                    const response = await fetch('/api/relatorios/agendamentos-por-dia?dias=30');
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.addResult('agendamentos', 'success', `✅ API de Agendamentos funcionando! Dados: ${data.labels.length} pontos`);
+                        this.mostrarAgendamentos(data);
+                    } else {
+                        this.addResult('agendamentos', 'error', `❌ Erro na API de agendamentos: ${data.error}`);
+                    }
+                } catch (error) {
+                    this.addResult('agendamentos', 'error', `❌ Erro de conexão: ${error.message}`);
+                }
+            }
+
+            mostrarEstatisticas(estatisticas) {
+                const container = document.getElementById('estatisticasResult');
+                container.innerHTML = `
+                    <div class="test-result test-success">
+                        <h5>📊 Estatísticas Obtidas:</h5>
+                        <ul>
+                            <li><strong>Agendamentos no período:</strong> ${estatisticas.agendamentos_periodo}</li>
+                            <li><strong>Receita no período:</strong> R$ ${estatisticas.receita_periodo.toFixed(2)}</li>
+                            <li><strong>Taxa de faltas:</strong> ${estatisticas.taxa_faltas}%</li>
+                            <li><strong>Taxa de confirmação:</strong> ${estatisticas.taxa_confirmacao}%</li>
+                            <li><strong>Período:</strong> ${estatisticas.periodo_dias} dias</li>
+                            <li><strong>Data início:</strong> ${estatisticas.data_inicio}</li>
+                            <li><strong>Data fim:</strong> ${estatisticas.data_fim}</li>
+                        </ul>
+                    </div>
+                `;
+            }
+
+            mostrarFiltros(data) {
+                const container = document.getElementById('filtrosResult');
+                container.innerHTML = `
+                    <div class="test-result test-success">
+                        <h5>🔍 Filtros Disponíveis:</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Profissionais:</h6>
+                                <ul>
+                                    ${data.profissionais.map(p => `<li>${p.nome} (ID: ${p.id})</li>`).join('')}
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Serviços:</h6>
+                                <ul>
+                                    ${data.servicos.map(s => `<li>${s.nome} (ID: ${s.id})</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            mostrarAgendamentos(data) {
+                const container = document.getElementById('agendamentosResult');
+                container.innerHTML = `
+                    <div class="test-result test-success">
+                        <h5>📅 Dados de Agendamentos:</h5>
+                        <p><strong>Labels:</strong> ${data.labels.join(', ')}</p>
+                        <p><strong>Dados:</strong> ${data.datasets[0].data.join(', ')}</p>
+                        <p><strong>Total de pontos:</strong> ${data.labels.length}</p>
+                    </div>
+                `;
+            }
+
+            addResult(category, type, message) {
+                this.results.push({ category, type, message });
+                console.log(message);
+            }
+
+            showSummary() {
+                const summary = document.getElementById('summary');
+                let totalTests = this.results.length;
+                let totalSuccess = this.results.filter(r => r.type === 'success').length;
+                let totalErrors = this.results.filter(r => r.type === 'error').length;
+                let totalWarnings = this.results.filter(r => r.type === 'warning').length;
+
+                const successRate = ((totalSuccess / totalTests) * 100).toFixed(1);
+                
+                let status = 'success';
+                if (totalErrors > 0) status = 'error';
+                else if (totalWarnings > 0) status = 'warning';
+
+                summary.innerHTML = `
+                    <div class="test-result test-${status}">
+                        <h4>📊 Resumo dos Testes de APIs</h4>
+                        <p><strong>Total de testes:</strong> ${totalTests}</p>
+                        <p><strong>Sucessos:</strong> ${totalSuccess} ✅</p>
+                        <p><strong>Avisos:</strong> ${totalWarnings} ⚠️</p>
+                        <p><strong>Erros:</strong> ${totalErrors} ❌</p>
+                        <p><strong>Taxa de sucesso:</strong> ${successRate}%</p>
+                    </div>
+                `;
+
+                console.log(`🧪 Testes de APIs concluídos: ${totalSuccess}/${totalTests} (${successRate}%)`);
+            }
+        }
+
+        const apiTester = new APITester();
+
+        // Funções globais para os botões
+        window.testarEstatisticas = () => {
+            apiTester.testarEstatisticas();
+        };
+
+        window.testarEstatisticasComFiltros = () => {
+            apiTester.testarEstatisticasComFiltros();
+        };
+
+        window.testarFiltros = () => {
+            apiTester.testarFiltros();
+        };
+
+        window.testarAgendamentosPorDia = () => {
+            apiTester.testarAgendamentosPorDia();
+        };
+
+        // Mostrar resumo após um delay
+        setTimeout(() => {
+            apiTester.showSummary();
+        }, 2000);
+    </script>
+</body>
+</html>

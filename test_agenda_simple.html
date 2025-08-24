@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Simples dos Botões</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .btn { padding: 10px 20px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-success { background-color: #28a745; color: white; }
+        .btn-danger { background-color: #dc3545; color: white; }
+        .status { margin-top: 20px; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <h1>Teste Simples dos Botões da Agenda</h1>
+    
+    <div>
+        <button class="btn btn-primary" onclick="testFunction1()">Teste 1 - Função Simples</button>
+        <button class="btn btn-success" onclick="testFunction2()">Teste 2 - Função com Parâmetro</button>
+        <button class="btn btn-danger" onclick="testFunction3()">Teste 3 - Função que não existe</button>
+    </div>
+    
+    <div id="status" class="status">Clique nos botões para testar...</div>
+    
+    <script>
+        // Função de teste 1
+        function testFunction1() {
+            document.getElementById('status').innerHTML = '✅ Função 1 funcionando!';
+            document.getElementById('status').className = 'status success';
+            console.log('Função 1 executada com sucesso');
+        }
+        
+        // Função de teste 2
+        function testFunction2() {
+            document.getElementById('status').innerHTML = '✅ Função 2 funcionando com parâmetro!';
+            document.getElementById('status').className = 'status success';
+            console.log('Função 2 executada com sucesso');
+        }
+        
+        // Verificar se as funções estão definidas
+        console.log('=== VERIFICAÇÃO INICIAL ===');
+        console.log('testFunction1:', typeof testFunction1);
+        console.log('testFunction2:', typeof testFunction2);
+        console.log('testFunction3:', typeof testFunction3);
+        
+        // Verificar se window está disponível
+        console.log('window disponível:', typeof window !== 'undefined');
+        console.log('document disponível:', typeof document !== 'undefined');
+        
+        // Verificar se onclick está funcionando
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM carregado');
+            console.log('Botões encontrados:', document.querySelectorAll('button').length);
+        });
+    </script>
+</body>
+</html>

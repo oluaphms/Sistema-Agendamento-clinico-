@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-bs-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title or "Sistema Clínica" }}</title>
+  
+  <!-- PWA Meta Tags -->
+  <meta name="description" content="Sistema completo de gestão clínica com agendamentos, pacientes e prontuários">
+  <meta name="theme-color" content="#0d6efd">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Sistema Clínica">
+  <meta name="msapplication-TileColor" content="#0d6efd">
+  <meta name="msapplication-config" content="/static/icons/browserconfig.xml">
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/static/manifest.json">
+  
+  <!-- PWA Icons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/icons/icon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/icons/icon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/icons/icon-180x180.png">
+  <link rel="mask-icon" href="/static/icons/safari-pinned-tab.svg" color="#0d6efd">
+  
+  <!-- Bootstrap 5 + Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- SweetAlert2 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/static/css/components.css">
+  <link rel="stylesheet" href="/static/css/live_menu.css">
+  <link rel="stylesheet" href="/static/css/configuracoes.css">
+  <link rel="stylesheet" href="/static/css/header.css">
+  <style>
+    :root {
+      --primary-color: #0d6efd;
+      --secondary-color: #6c757d;
+      --success-color: #198754;
+      --info-color: #0dcaf0;
+      --warning-color: #ffc107;
+      --danger-color: #dc3545;
+      --light-color: #f8f9fa;
+      --dark-color: #212529;
+      --header-height: 70px;
+      --transition-speed: 0.3s;
+    }
+
+    /* Dark Mode Variables */
+    [data-bs-theme="dark"] {
+      --bg-primary: #1a1a1a;
+      --bg-secondary: #2d2d2d;
+      --text-primary: #ffffff;
+      --text-secondary: #b0b0b0;
+      --border-color: #404040;
+      --header-bg: #2d2d2d;
+      --menu-bg: #1a1a1a;
+    }
+
+    [data-bs-theme="light"] {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f8f9fa;
+      --text-primary: #212529;
+      --text-secondary: #6c757d;
+      --border-color: #dee2e6;
+      --header-bg: #ffffff;
+      --menu-bg: #f8f9fa;
+    }
+
+    body {
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+      transition: background-color var(--transition-speed), color var(--transition-speed);
+      overflow-x: hidden;
+      padding-top: var(--header-height);
+    }
+
+    /* Header Fixo */
+    .header {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      height: var(--header-height) !important;
+      background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%) !important;
+      border-bottom: 1px solid var(--border-color) !important;
+      z-index: 1030 !important;
+      box-shadow: 0 2px 20px rgba(13, 110, 253, 0.3) !important;
+      backdrop-filter: blur(10px) !important;
+    }
+
+    .header-content {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      height: 100% !important;
+      padding: 0 2rem !important;
+    }
+
+    /* Botão do Menu Vivo no Header */
+    .menu-toggle {
+      position: relative !important;
+      background: rgba(255, 255, 255, 0.2) !important;
+      border: none !important;
+      color: white !important;
+      padding: 0.75rem !important;
+      border-radius: 12px !important;
+      cursor: pointer !important;
+      transition: all 0.3s ease !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      min-width: 48px !important;
+      height: 48px !important;
+    }
+
+    .menu-toggle:hover {
+      background: rgba(255, 255, 255, 0.3) !important;
+      transform: scale(1.05) !important;
+      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2) !important;
+    }
+
+    .menu-toggle.active {
+      background: var(--success-color) !important;
+      animation: pulse 2s infinite !important;
+    }
+
+    .menu-toggle i {
+      font-size: 1.25rem !important;
+    }
+
+    .menu-indicator {
+      position: absolute !important;
+      top: -2px !important;
+      right: -2px !important;
+      width: 8px !important;
+      height: 8px !important;
+      background: var(--success-color) !important;
+      border-radius: 50% !important;
+      border: 2px solid #0d6efd !important;
+      opacity: 0 !important;
+      transition: opacity 0.3s ease !important;
+    }
+
+    .menu-toggle.active .menu-indicator {
+      opacity: 1 !important;
+      animation: pulse 2s infinite !important;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.7; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .header-left {
+      display: flex !important;
+      align-items: center !important;
+      flex: 1 !important;
+    }
+    
+    .header-center {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      flex: 2 !important;
+    }
+
+    .header-brand {
+      display: flex !important;
+      align-items: center !important;
+      gap: 0.75rem !important;
+      color: white !important;
+      font-size: 1.5rem !important;
+      font-weight: 700 !important;
+      text-decoration: none !important;
+      transition: all var(--transition-speed) !important;
+    }
+
+    .header-brand:hover {
+      color: rgba(255, 255, 255, 0.8) !important;
+      transform: scale(1.05) !important;
+    }
+    
+    .orbital-menu-trigger {
+      background: rgba(255, 255, 255, 0.2) !important;
+      border: none !important;
+      color: white !important;
+      width: 40px !important;
+      height: 40px !important;
+      border-radius: 8px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      cursor: pointer !important;
+      transition: all var(--transition-speed) !important;
+      box-shadow: 0 2px 8px rgba(255, 255, 255, 0.2) !important;
+      margin-right: 0.75rem !important;
+    }
+
+    .orbital-menu-trigger:hover {
+      transform: scale(1.05) !important;
+      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3) !important;
+      background: rgba(255, 255, 255, 0.3) !important;
+    }
+
+    .logout-btn {
+      background: rgba(220, 53, 69, 0.9) !important;
+      border: none !important;
+      color: white !important;
+      width: 40px !important;
+      height: 40px !important;
+      border-radius: 8px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      cursor: pointer !important;
+      transition: all var(--transition-speed) !important;
+      box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3) !important;
+      margin-right: 0.75rem !important;
+    }
+
+    .logout-btn:hover {
+      transform: scale(1.05) !important;
+      box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4) !important;
+      background: #dc2626 !important;
+    }
+
+    .header-right {
+      display: flex !important;
+      align-items: center !important;
+      gap: 1rem !important;
+      flex: 1 !important;
+      justify-content: flex-end !important;
+    }
+
+    .theme-toggle {
+      background: rgba(255, 255, 255, 0.1) !important;
+      border: 2px solid rgba(255, 255, 255, 0.3) !important;
+      border-radius: 12px !important;
+      width: 45px !important;
+      height: 45px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      cursor: pointer !important;
+      transition: all var(--transition-speed) !important;
+      color: white !important;
+    }
+
+    .theme-toggle:hover {
+      border-color: rgba(255, 255, 255, 0.6) !important;
+      color: white !important;
+      transform: scale(1.1) !important;
+      background: rgba(255, 255, 255, 0.2) !important;
+    }
+
+    .user-menu {
+      position: relative;
+    }
+
+    .user-button {
+      background: var(--bg-primary);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      padding: 0.5rem 1rem;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: all var(--transition-speed);
+    }
+
+    .user-button:hover {
+      border-color: var(--primary-color);
+      transform: translateY(-2px);
+    }
+
+    /* Menu Lateral - Estilos movidos para sidebar_menu.css */
+
+    /* Main Content */
+    .main-content {
+      padding: 2rem;
+      min-height: calc(100vh - var(--header-height));
+    }
+
+    .page-header {
+      background: var(--bg-primary);
+      border-radius: 1rem;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      border: 1px solid var(--border-color);
+      text-align: center; /* Centraliza todo o conteúdo do header */
+    }
+
+    .page-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0;
+      text-align: center; /* Centraliza o título */
+    }
+
+    .page-subtitle {
+      color: var(--text-secondary);
+      margin: 0.5rem 0 0;
+      font-size: 1.1rem;
+      text-align: center; /* Centraliza o subtítulo */
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header-content {
+        padding: 0 1rem;
+      }
+      
+      .main-content {
+        padding: 1rem;
+      }
+      
+      /* Menu carrossel responsivo */
+    }
+
+    /* Animations */
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide-in-left {
+      animation: slideInLeft 0.3s ease-out;
+    }
+
+    @keyframes slideInLeft {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(0); }
+    }
+
+    /* Toast Notifications */
+    .toast-container {
+      position: fixed;
+      top: calc(var(--header-height) + 2rem);
+      right: 2rem;
+      z-index: 1050;
+    }
+
+    /* Cards Enhancement */
+    .card {
+      border: none;
+      border-radius: 1rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      transition: all var(--transition-speed);
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    }
+
+    /* Buttons Enhancement */
+    .btn {
+      border-radius: 0.75rem;
+      font-weight: 500;
+      transition: all var(--transition-speed);
+      border: none;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    /* Tables Enhancement */
+    .table {
+      border-radius: 0.75rem;
+      overflow: hidden;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    }
+
+    .table thead th {
+      background: linear-gradient(135deg, var(--primary-color) 0%, #0056b3 100%);
+      color: white;
+      border: none;
+      font-weight: 600;
+      padding: 1rem;
+    }
+
+    .table tbody tr {
+      transition: all var(--transition-speed);
+    }
+
+    .table tbody tr:hover {
+      background-color: rgba(13, 110, 253, 0.05);
+      transform: scale(1.01);
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Fixo -->
+  <header class="header">
+    <div class="header-content">
+      <div class="header-left">
+        <!-- Espaço vazio para balancear o layout -->
+      </div>
+      
+      <div class="header-center">
+        <!-- Logo e Nome Centralizado -->
+        <a href="{{ url_for('dashboard') }}" class="header-brand">
+          <i class="bi bi-heart-pulse-fill"></i>
+          <span>Clínica</span>
+        </a>
+      </div>
+      
+      <div class="header-right">
+        <!-- Botão do Menu Orbital -->
+        <button class="orbital-menu-trigger" id="orbitalMenuTrigger" title="Abrir Menu Orbital">
+          <i class="bi bi-list"></i>
+        </button>
+        
+        <!-- Botão de Sair do Sistema -->
+        <button class="logout-btn" id="logoutBtn" title="Sair do Sistema">
+          <i class="bi bi-box-arrow-right"></i>
+        </button>
+        
+        <!-- Botão de Alternância de Tema -->
+        <button class="theme-toggle" id="themeToggle" title="Alternar tema">
+          <i class="bi bi-sun-fill" id="themeIcon"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Menu Orbital - Sistema de Navegação Circular 3D -->
+  {% include 'live_menu.html' %}
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Page Header -->
+    <div class="page-header">
+       <h1 class="page-title">{{ title or "Pacientes" }}</h1>
+      {% if subtitle %}
+      <p class="page-subtitle">{{ subtitle }}</p>
+      {% endif %}
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for cat, msg in messages %}
+        <div class="alert alert-{{ cat }} alert-dismissible fade show fade-in" role="alert">
+          <i class="bi bi-info-circle me-2"></i>
+          {{ msg }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <!-- Page Content -->
+    <div class="fade-in">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+  <script src="/static/js/button-handlers.js"></script>
+  <script src="/static/js/live_menu.js"></script>
+  <script src="/static/js/agenda.js"></script>
+  
+  <!-- Bloco para scripts específicos das páginas -->
+  {% block scripts %}{% endblock %}
+  
+  <!-- Custom JavaScript -->
+  <script>
+    // Theme Toggle
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const html = document.documentElement;
+    
+    // Load saved theme (dark as default)
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    html.setAttribute('data-bs-theme', savedTheme);
+    updateThemeIcon(savedTheme);
+    
+    themeToggle.addEventListener('click', () => {
+      const currentTheme = html.getAttribute('data-bs-theme');
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      
+      html.setAttribute('data-bs-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeIcon(newTheme);
+    });
+    
+    function updateThemeIcon(theme) {
+      if (theme === 'dark') {
+        themeIcon.className = 'bi bi-moon-fill';
+      } else {
+        themeIcon.className = 'bi bi-sun-fill';
+      }
+    }
+    
+    // Menu Orbital - Integração com o sistema existente
+    console.log('Sistema de tema integrado com Menu Orbital');
+    
+    // Botão de Sair do Sistema
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => {
+        if (confirm('Tem certeza que deseja sair do sistema?')) {
+          // Tocar som de logout se disponível
+          if (window.orbitalMenu && window.orbitalMenu.playSound) {
+            window.orbitalMenu.playSound('logout');
+          }
+          
+          // Pequeno delay para o som
+          setTimeout(() => {
+            window.location.href = '/logout';
+          }, 300);
+        }
+      });
+    }
+    
+    // Active Navigation - Agora gerenciado pelo Menu Orbital
+    
+    // Toast Notifications
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `alert alert-${type} alert-dismissible fade show`;
+      toast.innerHTML = `
+        <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      `;
+      
+      const container = document.querySelector('.toast-container');
+      container.appendChild(toast);
+      
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.remove();
+        }
+      }, 5000);
+    }
+    
+    // Global toast function
+    window.showToast = showToast;
+    
+    // Active Navigation - Atualizado para o Menu Orbital
+    const currentPath = window.location.pathname;
+    
+    // Marcar rota ativa no Menu Orbital quando a página carregar
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.orbitalMenu) {
+        // O Menu Orbital já gerencia automaticamente a rota ativa
+        console.log('Menu Orbital inicializado, rota ativa:', currentPath);
+      }
+    });
+  </script>
+</body>
+</html>

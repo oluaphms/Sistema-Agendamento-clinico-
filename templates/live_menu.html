@@ -1,0 +1,171 @@
+<!-- Overlay do Menu Orbital -->
+<div class="orbital-menu-overlay" id="orbitalMenuOverlay"></div>
+
+<!-- Menu Orbital - Sistema de Navegação Circular 3D -->
+<div class="orbital-menu" id="orbitalMenu">
+  <!-- Círculo Central com Avatar do Usuário -->
+  <div class="orbital-center" id="orbitalCenter">
+    <div class="user-avatar-container">
+      <div class="user-avatar" id="userAvatar">
+        <img src="/static/icons/default-avatar.svg" alt="Usuário" id="avatarImage">
+        <div class="status-indicator online" id="statusIndicator"></div>
+      </div>
+      <div class="user-info">
+        <h4 class="user-name" id="userName">{{ session.get('nome', 'Usuário') }}</h4>
+        <span class="user-role" id="userRole">{{ session.get('role', 'Sistema') }}</span>
+        <div class="login-status">
+          <i class="bi bi-check-circle-fill"></i>
+          <span>Online</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Botão de Fechar Menu -->
+    <button class="close-menu-btn" id="closeMenuBtn" title="Fechar Menu">
+      <i class="bi bi-x-lg"></i>
+    </button>
+  </div>
+
+  <!-- Ícones Orbitando -->
+  <div class="orbital-items" id="orbitalItems">
+    <!-- Dashboard -->
+    <div class="orbital-item" data-route="dashboard" data-url="/dashboard">
+      <div class="item-icon">
+        <i class="bi bi-speedometer2"></i>
+      </div>
+      <div class="item-label">Dashboard</div>
+      <div class="item-glow"></div>
+    </div>
+
+    <!-- Pacientes -->
+    <div class="orbital-item" data-route="patients" data-url="/pacientes">
+      <div class="item-icon">
+        <i class="bi bi-people"></i>
+      </div>
+      <div class="item-label">Pacientes</div>
+      <div class="item-glow"></div>
+    </div>
+
+    <!-- Profissionais -->
+    <div class="orbital-item" data-route="professionals" data-url="/profissionais">
+      <div class="item-icon">
+        <i class="bi bi-person-badge"></i>
+      </div>
+      <div class="item-label">Profissionais</div>
+      <div class="item-glow"></div>
+    </div>
+
+    <!-- Usuários -->
+    <div class="orbital-item" data-route="users" data-url="/usuarios">
+      <div class="item-icon">
+        <i class="bi bi-people-fill"></i>
+      </div>
+      <div class="item-label">Usuários</div>
+      <div class="item-glow"></div>
+    </div>
+
+    <!-- Agendamentos -->
+    <div class="orbital-item" data-route="appointments" data-url="/agenda">
+      <div class="item-icon">
+        <i class="bi bi-calendar-event"></i>
+      </div>
+      <div class="item-label">Agendamentos</div>
+      <div class="item-glow"></div>
+    </div>
+
+    <!-- Serviços -->
+    <div class="orbital-item" data-route="services" data-url="/servicos">
+      <div class="item-icon">
+        <i class="bi bi-tools"></i>
+      </div>
+      <div class="item-label">Serviços</div>
+      <div class="item-glow"></div>
+    </div>
+
+    <!-- Relatórios -->
+    <div class="orbital-item" data-route="reports" data-url="/relatorios">
+      <div class="item-icon">
+        <i class="bi bi-graph-up"></i>
+      </div>
+      <div class="item-label">Relatórios</div>
+      <div class="item-glow"></div>
+    </div>
+
+    <!-- Configurações -->
+    <div class="orbital-item" data-route="settings" data-url="/configuracoes">
+      <div class="item-icon">
+        <i class="bi bi-gear"></i>
+      </div>
+      <div class="item-label">Configurações</div>
+      <div class="item-glow"></div>
+    </div>
+
+    <!-- Sobre -->
+    <div class="orbital-item" data-route="about" data-url="/sobre">
+      <div class="item-icon">
+        <i class="bi bi-info-circle"></i>
+      </div>
+      <div class="item-label">Sobre</div>
+      <div class="item-glow"></div>
+    </div>
+  </div>
+
+  <!-- Partículas de Fundo -->
+  <div class="particles-container" id="particlesContainer">
+    <div class="particle" style="--delay: 0s"></div>
+    <div class="particle" style="--delay: 0.5s"></div>
+    <div class="particle" style="--delay: 1s"></div>
+    <div class="particle" style="--delay: 1.5s"></div>
+    <div class="particle" style="--delay: 2s"></div>
+    <div class="particle" style="--delay: 2.5s"></div>
+    <div class="particle" style="--delay: 3s"></div>
+    <div class="particle" style="--delay: 3.5s"></div>
+    <div class="particle" style="--delay: 4s"></div>
+    <div class="particle" style="--delay: 4.5s"></div>
+    <div class="particle" style="--delay: 5s"></div>
+    <div class="particle" style="--delay: 5.5s"></div>
+    <div class="particle" style="--delay: 6s"></div>
+    <div class="particle" style="--delay: 6.5s"></div>
+    <div class="particle" style="--delay: 7s"></div>
+    <div class="particle" style="--delay: 7.5s"></div>
+  </div>
+</div>
+
+<!-- Botão do Menu Orbital agora está no cabeçalho -->
+
+<!-- CSS do Menu Orbital -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/live_menu.css') }}">
+
+<!-- JavaScript do Menu Orbital -->
+<script src="{{ url_for('static', filename='js/live_menu.js') }}"></script>
+
+<script>
+// Inicializar menu orbital completo
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('🚀 Menu orbital inicializado com todos os componentes');
+  
+  // Verificar se o usuário está logado e atualizar informações
+  updateUserInfo();
+});
+
+// Função para atualizar informações do usuário
+function updateUserInfo() {
+  const userName = document.getElementById('userName');
+  const userRole = document.getElementById('userRole');
+  const statusIndicator = document.getElementById('statusIndicator');
+  
+  // Marcar como online
+  if (statusIndicator) {
+    statusIndicator.classList.add('online');
+  }
+  
+  // Se não houver informações da sessão, usar valores padrão
+  if (userName && userName.textContent.trim() === '') {
+    userName.textContent = 'Usuário Logado';
+  }
+  
+  if (userRole && userRole.textContent.trim() === '') {
+    userRole.textContent = 'Sistema Ativo';
+  }
+}
+</script>

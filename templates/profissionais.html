@@ -1,0 +1,607 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <!-- Formulário de Cadastro -->
+    <form method="POST" class="mb-4">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label for="nome" class="form-label">
+            <i class="bi bi-person me-2"></i>Nome Completo
+          </label>
+          <input 
+            type="text" 
+            class="form-control" 
+            id="nome" 
+            name="nome" 
+            placeholder="Digite o nome completo"
+            required
+          >
+        </div>
+            
+            <div class="col-md-6">
+              <label for="especialidade" class="form-label">
+                <i class="bi bi-award me-2"></i>Especialidade
+              </label>
+              <select class="form-select" id="especialidade" name="especialidade" required onchange="toggleEspecialidadeOutra()">
+                <option value="">Selecione a especialidade</option>
+                <option value="cardiologia">Cardiologia</option>
+                <option value="pediatria">Pediatria</option>
+                <option value="ortopedia">Ortopedia</option>
+                <option value="neurologia">Neurologia</option>
+                <option value="dermatologia">Dermatologia</option>
+                <option value="ginecologia">Ginecologia</option>
+                <option value="urologia">Urologia</option>
+                <option value="psiquiatria">Psiquiatria</option>
+                <option value="fisioterapia">Fisioterapia</option>
+                <option value="nutrição">Nutrição</option>
+                <option value="odontologia">Odontologia</option>
+                <option value="outra">Outra</option>
+              </select>
+              <input 
+                type="text" 
+                class="form-control mt-2" 
+                id="especialidadeOutra" 
+                name="especialidade_outra" 
+                placeholder="Digite a especialidade personalizada"
+                maxlength="100"
+                style="display: none;"
+              >
+            </div>
+            
+            <div class="col-md-6">
+              <label for="telefone" class="form-label">
+                <i class="bi bi-telephone me-2"></i>Telefone
+              </label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="telefone" 
+                name="telefone" 
+                placeholder="(11) 99999-9999"
+              >
+            </div>
+            
+            <div class="col-md-6">
+              <label for="email" class="form-label">
+                <i class="bi bi-envelope me-2"></i>E-mail
+              </label>
+              <input 
+                type="email" 
+                class="form-control" 
+                id="email" 
+                name="email" 
+                placeholder="email@exemplo.com"
+              >
+            </div>
+            
+            <div class="col-12">
+              <label for="horarios" class="form-label">
+                <i class="bi bi-clock me-2"></i>Horários de Atendimento
+              </label>
+              <textarea 
+                class="form-control" 
+                id="horarios" 
+                name="horarios" 
+                rows="3" 
+                placeholder='Ex: {"segunda": ["08:00-12:00","14:00-18:00"], "terca": ["08:00-12:00"]}'
+              ></textarea>
+
+            </div>
+            
+            <div class="col-12">
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-person-plus me-2"></i>
+                Cadastrar Profissional
+              </button>
+            </div>
+          </div>
+        </form>
+
+                <!-- Barra de Busca -->
+        <div class="row mb-4">
+          <div class="col-md-8">
+            <div class="input-group">
+              <input 
+                type="text" 
+                class="form-control" 
+                id="searchInput" 
+                placeholder="Buscar profissionais por nome, especialidade, telefone ou email..."
+              >
+              <button class="btn btn-primary" onclick="executarBusca()" type="button" title="Buscar">
+                <i class="bi bi-search"></i>
+              </button>
+              <button class="btn btn-outline-secondary" onclick="limparFiltros()" type="button" title="Limpar busca">
+                <i class="bi bi-arrow-clockwise me-1"></i>Limpar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de Profissionais em Cards -->
+        <div class="row" id="profissionaisGrid">
+          {% for p in profissionais %}
+          <div class="col-xl-4 col-lg-6 col-md-6 mb-4 profissional-card" 
+               data-nome="{{ p.nome|lower|trim }}" 
+               data-especialidade="{{ p.especialidade|lower|trim if p.especialidade else '' }}" 
+               data-email="{{ p.email|lower|trim if p.email else '' }}"
+               data-telefone="{{ p.telefone|lower|trim if p.telefone else '' }}">
+            <div class="card h-100">
+              <div class="card-header bg-info text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="d-flex align-items-center">
+                    <i class="bi bi-person-badge me-2 fs-4"></i>
+                    <h6 class="mb-0">{{ p.nome }}</h6>
+                  </div>
+                  <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-light" type="button" data-bs-toggle="dropdown">
+                      <i class="bi bi-three-dots-vertical"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" href="#" onclick="verAgenda({{ p.id }})">
+                        <i class="bi bi-calendar-week me-2"></i>Ver Agenda
+                      </a></li>
+                      <li><a class="dropdown-item" href="{{ url_for('editar_profissional', prof_id=p.id) }}">
+                        <i class="bi bi-pencil me-2"></i>Editar
+                      </a></li>
+                      <li><a class="dropdown-item" href="#" onclick="verEstatisticas({{ p.id }})">
+                        <i class="bi bi-graph-up me-2"></i>Estatísticas
+                      </a></li>
+                      <li><hr class="dropdown-divider"></li>
+                      <li><a class="dropdown-item text-danger" href="#" onclick="excluirProfissional({{ p.id }}, '{{ p.nome|replace("'", "\\'") }}')">
+                        <i class="bi bi-trash me-2"></i>Excluir
+                      </a></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="card-body">
+                {% if p.especialidade %}
+                <div class="d-flex align-items-center mb-2">
+                  <i class="bi bi-award text-warning me-2"></i>
+                  <span class="badge bg-warning bg-opacity-10 text-warning">{{ p.especialidade }}</span>
+                </div>
+                {% endif %}
+                
+                {% if p.telefone %}
+                <div class="d-flex align-items-center mb-2">
+                  <i class="bi bi-telephone text-primary me-2"></i>
+                  <span class="text-muted">{{ p.telefone }}</span>
+                </div>
+                {% endif %}
+                
+                {% if p.email %}
+                <div class="d-flex align-items-center mb-2">
+                  <i class="bi bi-envelope text-info me-2"></i>
+                  <span class="text-muted">{{ p.email }}</span>
+                </div>
+                {% endif %}
+                
+                {% if p.horarios %}
+                <div class="d-flex align-items-start mb-2">
+                  <i class="bi bi-clock text-success me-2 mt-1"></i>
+                  <div class="flex-grow-1">
+                    <small class="text-muted">
+                      <strong>Horários:</strong><br>
+                      <span class="text-muted">{{ p.horarios[:50] }}{% if p.horarios|length > 50 %}...{% endif %}</span>
+                    </small>
+                  </div>
+                </div>
+                {% endif %}
+                
+                <!-- Estatísticas rápidas -->
+                <div class="row text-center mt-3">
+                  <div class="col-4">
+                    <div class="border rounded p-2">
+                      <small class="text-muted d-block">Consultas</small>
+                      <span class="fw-bold text-primary">0</span>
+                    </div>
+                  </div>
+                  <div class="col-4">
+                    <div class="border rounded p-2">
+                      <small class="text-muted d-block">Pacientes</small>
+                      <span class="fw-bold text-success">0</span>
+                    </div>
+                  </div>
+                  <div class="col-4">
+                    <div class="border rounded p-2">
+                      <small class="text-muted d-block">Avaliação</small>
+                      <span class="fw-bold text-warning">-</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="card-footer bg-transparent">
+                <div class="d-flex gap-2">
+                  <a href="{{ url_for('editar_profissional', prof_id=p.id) }}" class="btn btn-outline-primary btn-sm flex-fill">
+                    <i class="bi bi-pencil me-1"></i>Editar
+                  </a>
+                  <button class="btn btn-outline-info btn-sm flex-fill" onclick="verAgenda({{ p.id }})" type="button">
+                    <i class="bi bi-calendar-week me-1"></i>Agenda
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Estado vazio -->
+        {% if not profissionais %}
+        <div class="text-center py-5">
+          <i class="bi bi-person-badge text-muted" style="font-size: 4rem;"></i>
+          <h4 class="text-muted mt-3">Nenhum profissional encontrado</h4>
+          <p class="text-muted">Comece cadastrando seu primeiro profissional de saúde.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Estatísticas -->
+<div class="modal fade" id="statsModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-graph-up me-2"></i>Estatísticas do Profissional
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="statsContent">
+          <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Carregando...</span>
+            </div>
+            <p class="mt-2">Carregando estatísticas...</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Função para executar busca (chamada pelo botão da lupa)
+function executarBusca() {
+  console.log('🔍 Função executarBusca chamada');
+  filtrarProfissionais();
+}
+
+// Função para filtrar profissionais
+function filtrarProfissionais() {
+  console.log('🔍 Função filtrarProfissionais chamada');
+  
+  try {
+    const searchInput = document.getElementById('searchInput');
+    if (!searchInput) {
+      console.error('❌ Campo de busca não encontrado');
+      return;
+    }
+    
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    console.log('🔍 Termo de busca:', searchTerm);
+    
+    if (!searchTerm) {
+      console.log('ℹ️ Campo vazio, mostrando todos os profissionais');
+      mostrarTodosProfissionais();
+      return;
+    }
+    
+    const cards = document.querySelectorAll('.profissional-card');
+    console.log('📋 Cards encontrados:', cards.length);
+    
+    let visibleCount = 0;
+    
+    cards.forEach((card, index) => {
+      const nome = (card.dataset.nome || '').toLowerCase();
+      const especialidade = (card.dataset.especialidade || '').toLowerCase();
+      const email = (card.dataset.email || '').toLowerCase();
+      const telefone = (card.dataset.telefone || '').toLowerCase();
+      
+      console.log(`📋 Card ${index}: nome="${nome}", especialidade="${especialidade}", email="${email}", telefone="${telefone}"`);
+      
+      const matchesSearch = nome.includes(searchTerm) || 
+                           especialidade.includes(searchTerm) || 
+                           email.includes(searchTerm) ||
+                           telefone.includes(searchTerm);
+      
+      if (matchesSearch) {
+        card.style.display = 'block';
+        visibleCount++;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+    
+    console.log(`✅ Profissionais visíveis: ${visibleCount}/${cards.length}`);
+    
+    // Mostrar mensagem se nenhum resultado for encontrado
+    if (visibleCount === 0) {
+      mostrarMensagemNenhumResultado();
+    } else {
+      ocultarMensagemNenhumResultado();
+    }
+  } catch (error) {
+    console.error('❌ Erro na função filtrarProfissionais:', error);
+  }
+}
+
+// Função para mostrar todos os profissionais
+function mostrarTodosProfissionais() {
+  const cards = document.querySelectorAll('.profissional-card');
+  cards.forEach(card => {
+    card.style.display = 'block';
+  });
+  ocultarMensagemNenhumResultado();
+}
+
+// Função para mostrar mensagem de nenhum resultado
+function mostrarMensagemNenhumResultado() {
+  let mensagem = document.getElementById('mensagemNenhumResultado');
+  if (!mensagem) {
+    mensagem = document.createElement('div');
+    mensagem.id = 'mensagemNenhumResultado';
+    mensagem.className = 'alert alert-info text-center mt-3';
+    mensagem.innerHTML = '<i class="bi bi-info-circle me-2"></i>Nenhum profissional encontrado com os critérios informados.';
+    
+    const grid = document.getElementById('profissionaisGrid');
+    if (grid) {
+      grid.parentNode.insertBefore(mensagem, grid.nextSibling);
+    }
+  }
+  mensagem.style.display = 'block';
+}
+
+// Função para ocultar mensagem de nenhum resultado
+function ocultarMensagemNenhumResultado() {
+  const mensagem = document.getElementById('mensagemNenhumResultado');
+  if (mensagem) {
+    mensagem.style.display = 'none';
+  }
+}
+
+// Função para limpar filtros
+function limparFiltros() {
+  console.log('🧹 Função limparFiltros chamada');
+  
+  try {
+    const searchInput = document.getElementById('searchInput');
+    if (!searchInput) {
+      console.error('❌ Campo de busca não encontrado');
+      return;
+    }
+    
+    searchInput.value = '';
+    console.log('🧹 Campo de busca limpo');
+    
+    // Mostrar todos os profissionais
+    mostrarTodosProfissionais();
+    
+    // Focar no campo de busca
+    searchInput.focus();
+    
+    console.log('✅ Filtros limpos com sucesso');
+  } catch (error) {
+    console.error('❌ Erro na função limparFiltros:', error);
+  }
+}
+
+// Função para ver agenda do profissional
+function verAgenda(profissionalId) {
+  console.log('Redirecionando para agenda do profissional:', profissionalId); // Debug
+  
+  // Verificar se a rota de agenda existe
+  if (typeof window.location !== 'undefined') {
+    // Redirecionar para a agenda com filtro por profissional
+    window.location.href = `/agenda?profissional_id=${profissionalId}`;
+  } else {
+    // Fallback: mostrar mensagem ou abrir em nova aba
+    alert(`Visualizando agenda do profissional ID: ${profissionalId}`);
+  }
+}
+
+// Função para ver estatísticas do profissional
+function verEstatisticas(profissionalId) {
+  const modal = new bootstrap.Modal(document.getElementById('statsModal'));
+  modal.show();
+  
+  // Aqui você pode implementar a lógica para carregar as estatísticas
+  // Por enquanto, mostra uma mensagem de exemplo
+  setTimeout(() => {
+    document.getElementById('statsContent').innerHTML = `
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card text-center p-3 border">
+            <h3 class="text-primary">0</h3>
+            <p class="mb-0">Consultas este mês</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card text-center p-3 border">
+            <h3 class="text-success">0</h3>
+            <p class="mb-0">Pacientes atendidos</p>
+          </div>
+        </div>
+      </div>
+      <div class="row mt-3">
+        <div class="col-md-6">
+          <div class="card text-center p-3 border">
+            <h3 class="text-info">0</h3>
+            <p class="mb-0">Horas trabalhadas</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card text-center p-3 border">
+            <h3 class="text-warning">-</h3>
+            <p class="mb-0">Avaliação média</p>
+          </div>
+        </div>
+      </div>
+    `;
+  }, 1000);
+}
+
+// Função para excluir profissional
+function excluirProfissional(profissionalId, nome) {
+  if (confirm(`Tem certeza que deseja excluir o profissional "${nome}"?`)) {
+    // Aqui você pode implementar a lógica para excluir o profissional
+    // Por enquanto, usa o formulário existente
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/profissionais/excluir/${profissionalId}`;
+    document.body.appendChild(form);
+    form.submit();
+  }
+}
+
+// Função para mostrar/ocultar campo de especialidade personalizada
+function toggleEspecialidadeOutra() {
+  const especialidadeSelect = document.getElementById('especialidade');
+  const especialidadeOutraInput = document.getElementById('especialidadeOutra');
+  
+  if (especialidadeSelect && especialidadeOutraInput) {
+    if (especialidadeSelect.value === 'outra') {
+      especialidadeOutraInput.style.display = 'block';
+      especialidadeOutraInput.required = true;
+    } else {
+      especialidadeOutraInput.style.display = 'none';
+      especialidadeOutraInput.required = false;
+      especialidadeOutraInput.value = '';
+    }
+  }
+}
+
+// Aplicar máscaras nos campos e inicializar funcionalidades
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('🚀 DOM carregado, inicializando funcionalidades...');
+  
+  try {
+    // Verificar se o campo de busca existe
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+      console.log('✅ Campo de busca encontrado e configurado');
+      
+      // Adicionar evento de busca ao pressionar Enter
+      searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          console.log('⌨️ Enter pressionado, executando busca');
+          executarBusca();
+        }
+      });
+    } else {
+      console.error('❌ Campo de busca não encontrado!');
+    }
+    
+    // Verificar se os cards de profissionais existem
+    const cards = document.querySelectorAll('.profissional-card');
+    console.log(`📋 Cards de profissionais encontrados: ${cards.length}`);
+    
+    // Máscara para telefone
+    const telefoneInput = document.getElementById('telefone');
+    if (telefoneInput) {
+      telefoneInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+        value = value.replace(/(\d)(\d{4})$/, '$1-$2');
+        e.target.value = value;
+      });
+    }
+    
+    // Validação do campo de horários
+    const horariosInput = document.getElementById('horarios');
+    if (horariosInput) {
+      horariosInput.addEventListener('blur', function(e) {
+        try {
+          if (e.target.value.trim()) {
+            JSON.parse(e.target.value);
+            e.target.classList.remove('is-invalid');
+            e.target.classList.add('is-valid');
+          }
+        } catch (error) {
+          e.target.classList.remove('is-valid');
+          e.target.classList.add('is-invalid');
+        }
+      });
+    }
+    
+    console.log('✅ Inicialização concluída com sucesso');
+  } catch (error) {
+    console.error('❌ Erro durante a inicialização:', error);
+  }
+});
+</script>
+
+<style>
+.profissional-card .card {
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
+}
+
+.profissional-card .card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.profissional-card .card-header {
+  border-bottom: none;
+}
+
+.profissional-card .card-footer {
+  border-top: none;
+  background-color: transparent;
+}
+
+.badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.profissional-card .border.rounded {
+  transition: all 0.2s ease;
+}
+
+.profissional-card .border.rounded:hover {
+  background-color: var(--bg-secondary);
+  transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
+  .profissional-card {
+    margin-bottom: 1rem;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+  
+  .card-footer {
+    padding: 1rem;
+  }
+  
+  .row.text-center .col-4 {
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Validação de campos */
+.is-valid {
+  border-color: #198754 !important;
+  box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25) !important;
+}
+
+.is-invalid {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+}
+</style>
+{% endblock %}

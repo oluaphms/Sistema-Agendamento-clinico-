@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema moderno para gestão de clínicas médicas">
+    <meta name="theme-color" content="#2563eb">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Sistema Clínica">
+    
+    <!-- Favicon e Icons -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='icons/favicon.ico') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-152x152.png') }}">
+    
+    <!-- Manifesto PWA -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    
+    <!-- CSS específico da página -->
+    {% block extra_css %}{% endblock %}
+    
+    <title>{% block title %}{{ app_name }}{% endblock %}</title>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <!-- Logo -->
+                <div class="logo">
+                    <a href="{{ url_for('dashboard.index') }}" class="logo-link">
+                        <div class="logo-icon">🏥</div>
+                        <div class="logo-text">
+                            <span class="logo-title">{{ app_name }}</span>
+                            <span class="logo-subtitle">v{{ app_version }}</span>
+                        </div>
+                    </a>
+                </div>
+                
+                <!-- Navegação principal -->
+                <nav class="main-nav">
+                    <ul class="nav-list">
+                        <li class="nav-item">
+                            <a href="{{ url_for('dashboard.index') }}" class="nav-link">
+                                <span class="nav-icon">📊</span>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url_for('appointments.index') }}" class="nav-link">
+                                <span class="nav-icon">📅</span>
+                                Agenda
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url_for('patients.index') }}" class="nav-link">
+                                <span class="nav-icon">👥</span>
+                                Pacientes
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url_for('professionals.index') }}" class="nav-link">
+                                <span class="nav-icon">👨‍⚕️</span>
+                                Profissionais
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url_for('reports.index') }}" class="nav-link">
+                                <span class="nav-icon">📈</span>
+                                Relatórios
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                
+                <!-- Ações do usuário -->
+                <div class="user-actions">
+                    <!-- Status online/offline -->
+                    <div id="online-status" class="status-indicator online">
+                        🟢 Online
+                    </div>
+                    
+                    <!-- Botão instalar PWA -->
+                    <button id="install-pwa" class="btn btn-primary btn-sm" style="display: none;">
+                        📱 Instalar
+                    </button>
+                    
+                    <!-- Toggle tema -->
+                    <button id="theme-toggle" class="btn btn-secondary btn-sm" data-tooltip="Alternar tema">
+                        🌙
+                    </button>
+                    
+                    <!-- Dropdown do usuário -->
+                    <div class="dropdown user-dropdown">
+                        <button class="dropdown-toggle user-toggle">
+                            <div class="user-avatar">
+                                {% if current_user.avatar %}
+                                    <img src="{{ current_user.avatar }}" alt="{{ current_user.full_name }}">
+                                {% else %}
+                                    <span class="avatar-placeholder">{{ current_user.first_name[0] }}</span>
+                                {% endif %}
+                            </div>
+                            <span class="user-name">{{ current_user.first_name }}</span>
+                            <span class="dropdown-arrow">▼</span>
+                        </button>
+                        
+                        <div class="dropdown-menu">
+                            <div class="dropdown-header">
+                                <strong>{{ current_user.full_name }}</strong>
+                                <span class="user-role">{{ current_user.role|title }}</span>
+                            </div>
+                            
+                            <div class="dropdown-divider"></div>
+                            
+                            <a href="#" class="dropdown-item">
+                                <span class="item-icon">👤</span>
+                                Perfil
+                            </a>
+                            
+                            <a href="#" class="dropdown-item">
+                                <span class="item-icon">⚙️</span>
+                                Configurações
+                            </a>
+                            
+                            {% if current_user.two_factor_enabled %}
+                            <a href="#" class="dropdown-item">
+                                <span class="item-icon">🔐</span>
+                                2FA
+                            </a>
+                            {% endif %}
+                            
+                            <div class="dropdown-divider"></div>
+                            
+                            <a href="{{ url_for('auth.logout') }}" class="dropdown-item">
+                                <span class="item-icon">🚪</span>
+                                Sair
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Menu mobile -->
+                <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+                    <span class="hamburger"></span>
+                </button>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Sidebar mobile -->
+    <div class="mobile-sidebar" id="mobile-sidebar">
+        <div class="sidebar-header">
+            <h3>Menu</h3>
+            <button class="sidebar-close" id="sidebar-close">×</button>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <ul class="sidebar-nav-list">
+                <li class="sidebar-nav-item">
+                    <a href="{{ url_for('dashboard.index') }}" class="sidebar-nav-link">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="{{ url_for('appointments.index') }}" class="sidebar-nav-link">
+                        <span class="nav-icon">📅</span>
+                        Agenda
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="{{ url_for('patients.index') }}" class="sidebar-nav-link">
+                        <span class="nav-icon">👥</span>
+                        Pacientes
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="{{ url_for('professionals.index') }}" class="sidebar-nav-link">
+                        <span class="nav-icon">👨‍⚕️</span>
+                        Profissionais
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="{{ url_for('reports.index') }}" class="sidebar-nav-link">
+                        <span class="nav-icon">📈</span>
+                        Relatórios
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    
+    <!-- Overlay mobile -->
+    <div class="mobile-overlay" id="mobile-overlay"></div>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Breadcrumbs -->
+        {% block breadcrumbs %}
+        <div class="breadcrumbs">
+            <div class="container">
+                <nav class="breadcrumb-nav">
+                    <ol class="breadcrumb-list">
+                        <li class="breadcrumb-item">
+                            <a href="{{ url_for('dashboard.index') }}" class="breadcrumb-link">Início</a>
+                        </li>
+                        {% block breadcrumb_items %}{% endblock %}
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        {% endblock %}
+        
+        <!-- Page Header -->
+        {% block page_header %}
+        <div class="page-header">
+            <div class="container">
+                <div class="page-header-content">
+                    <h1 class="page-title">{% block page_title %}{% endblock %}</h1>
+                    <div class="page-actions">
+                        {% block page_actions %}{% endblock %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endblock %}
+        
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    <div class="container">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category if category != 'message' else 'info' }} fade-in">
+                                <div class="alert-content">
+                                    <span class="alert-message">{{ message }}</span>
+                                    <button class="alert-close" onclick="this.parentElement.parentElement.remove()">×</button>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        <!-- Page Content -->
+        <div class="page-content">
+            <div class="container">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <p>&copy; {{ current_year }} {{ app_name }}. Todos os direitos reservados.</p>
+                    <p class="footer-version">Versão {{ app_version }}</p>
+                </div>
+                
+                <div class="footer-links">
+                    <a href="#" class="footer-link">Política de Privacidade</a>
+                    <a href="#" class="footer-link">Termos de Uso</a>
+                    <a href="#" class="footer-link">Suporte</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <!-- JavaScript específico da página -->
+    {% block extra_js %}{% endblock %}
+    
+    <!-- PWA Install Prompt -->
+    <script>
+        // Registra service worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/static/sw.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+        
+        // Menu mobile
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const mobileSidebar = document.getElementById('mobile-sidebar');
+            const mobileOverlay = document.getElementById('mobile-overlay');
+            const sidebarClose = document.getElementById('sidebar-close');
+            
+            function openSidebar() {
+                mobileSidebar.classList.add('open');
+                mobileOverlay.classList.add('active');
+                document.body.classList.add('sidebar-open');
+            }
+            
+            function closeSidebar() {
+                mobileSidebar.classList.remove('open');
+                mobileOverlay.classList.remove('active');
+                document.body.classList.remove('sidebar-open');
+            }
+            
+            mobileMenuToggle.addEventListener('click', openSidebar);
+            sidebarClose.addEventListener('click', closeSidebar);
+            mobileOverlay.addEventListener('click', closeSidebar);
+            
+            // Fecha sidebar ao redimensionar para desktop
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 768) {
+                    closeSidebar();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

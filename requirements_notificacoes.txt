@@ -1,0 +1,39 @@
+# Dependências para Sistema de Notificações WhatsApp
+# Instalar com: pip install -r requirements_notificacoes.txt
+
+# Biblioteca para agendamento de tarefas
+schedule==1.2.0
+
+# Biblioteca para requisições HTTP (usado no Twilio)
+requests==2.31.0
+
+# Biblioteca para logging avançado
+python-json-logger==2.0.7
+
+# Biblioteca para validação de dados
+pydantic==2.5.0
+
+# Biblioteca para expressões cron
+croniter==2.0.1
+
+# Biblioteca para timezone
+pytz==2023.3
+
+# Biblioteca para formatação de telefones
+phonenumbers==8.13.25
+
+# Biblioteca para templates de mensagens
+jinja2==3.1.2
+
+# Biblioteca para criptografia (para tokens de webhook)
+cryptography==41.0.7
+
+# Biblioteca para filas de tarefas (opcional)
+celery==5.3.4
+
+# Biblioteca para Redis (opcional, para Celery)
+redis==5.0.1
+
+# Biblioteca para testes
+pytest==7.4.3
+pytest-asyncio==0.21.1

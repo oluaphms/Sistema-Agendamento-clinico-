@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title mb-0">
+          <i class="bi bi-people-fill me-2"></i>
+          <!-- Título removido -->
+        </h3>
+        <p class="text-muted mb-0">Crie e gerencie usuários do sistema</p>
+      </div>
+      <div class="card-body">
+        <form method="POST" class="mb-4">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label for="nome" class="form-label">
+                <i class="bi bi-person me-2"></i>Nome Completo
+              </label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="nome" 
+                name="nome" 
+                placeholder="Digite o nome completo"
+                required
+              >
+            </div>
+            
+            <div class="col-md-4">
+              <label for="cpf" class="form-label">
+                <i class="bi bi-card-text me-2"></i>CPF
+              </label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="cpf" 
+                name="cpf" 
+                placeholder="000.000.000-00"
+                maxlength="14"
+                required
+              >
+            </div>
+            
+            <div class="col-md-4">
+              <label for="role" class="form-label">
+                <i class="bi bi-shield me-2"></i>Perfil de Acesso
+              </label>
+              <select class="form-select" id="role" name="role" required>
+                <option value="">Selecione o perfil</option>
+                <option value="recepcao">Recepção</option>
+                <option value="profissional">Profissional</option>
+                <option value="admin">Administrador</option>
+              </select>
+            </div>
+            
+            <div class="col-12 d-flex justify-content-center">
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-person-plus me-2"></i>
+                Criar Usuário
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <!-- Informações sobre senha inicial -->
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle me-2"></i>
+          <strong>Senha Inicial:</strong> A senha inicial será automaticamente os 3 primeiros dígitos do CPF. 
+          O usuário será solicitado a alterá-la no primeiro acesso.
+        </div>
+
+        <!-- Lista de Usuários -->
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead class="table-dark">
+              <tr>
+                <th><i class="bi bi-person me-2"></i>Nome</th>
+                <th><i class="bi bi-card-text me-2"></i>CPF</th>
+                <th><i class="bi bi-shield me-2"></i>Perfil</th>
+                <th><i class="bi bi-calendar me-2"></i>Data Criação</th>
+                <th><i class="bi bi-clock me-2"></i>Último Acesso</th>
+                <th><i class="bi bi-gear me-2"></i>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for u in usuarios %}
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="avatar-sm me-2">
+                      <i class="bi bi-person-circle fs-4 text-primary"></i>
+                    </div>
+                    <div>
+                      <strong>{{ u.nome }}</strong>
+                      {% if u.primeiro_acesso %}
+                        <span class="badge bg-warning text-dark ms-2">Primeiro Acesso</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <code>{{ u.cpf[:3] }}.{{ u.cpf[3:6] }}.{{ u.cpf[6:9] }}-{{ u.cpf[9:] }}</code>
+                </td>
+                <td>
+                  {% if u.role == 'admin' %}
+                    <span class="badge bg-danger">Administrador</span>
+                  {% elif u.role == 'profissional' %}
+                    <span class="badge bg-primary">Profissional</span>
+                  {% else %}
+                    <span class="badge bg-secondary">Recepção</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <small class="text-muted">
+                    {{ u.data_criacao.strftime('%d/%m/%Y') if u.data_criacao else 'N/A' }}
+                  </small>
+                </td>
+                <td>
+                  {% if u.ultimo_acesso %}
+                    <small class="text-muted">
+                      {{ u.ultimo_acesso.strftime('%d/%m/%Y %H:%M') }}
+                    </small>
+                  {% else %}
+                    <span class="text-muted">Nunca acessou</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="btn-group btn-group-sm" role="group">
+                    <button type="button" class="btn btn-outline-primary" 
+                            onclick="showUserInfo('{{ u.nome }}', '{{ u.cpf }}', '{{ u.role }}', '{{ u.primeiro_acesso }}')">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-warning" 
+                            onclick="resetPassword('{{ u.id }}', '{{ u.nome }}', '{{ u.cpf }}')">
+                      <i class="bi bi-key"></i>
+                    </button>
+                    {% if u.role != 'admin' or usuarios|length > 1 %}
+                    <button type="button" class="btn btn-outline-danger" 
+                            onclick="deleteUser('{{ u.id }}', '{{ u.nome }}')">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Informações do Usuário -->
+<div class="modal fade" id="userInfoModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Informações do Usuário</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="userInfoBody">
+        <!-- Conteúdo será preenchido via JavaScript -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // CPF Mask
+  document.getElementById('cpf').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length <= 11) {
+      value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+      e.target.value = value;
+    }
+  });
+
+  // Form Validation
+  document.querySelector('form').addEventListener('submit', function(e) {
+    const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
+    const nome = document.getElementById('nome').value.trim();
+    const role = document.getElementById('role').value;
+    
+    if (!nome) {
+      e.preventDefault();
+      Swal.fire({
+        icon: 'error',
+        title: 'Nome Obrigatório',
+        text: 'Por favor, digite o nome completo do usuário.',
+        confirmButtonColor: '#0d6efd'
+      });
+      return false;
+    }
+    
+    if (cpf.length !== 11) {
+      e.preventDefault();
+      Swal.fire({
+        icon: 'error',
+        title: 'CPF Inválido',
+        text: 'Por favor, digite um CPF válido com 11 dígitos.',
+        confirmButtonColor: '#0d6efd'
+      });
+      return false;
+    }
+    
+    if (!role) {
+      e.preventDefault();
+      Swal.fire({
+        icon: 'error',
+        title: 'Perfil Obrigatório',
+        text: 'Por favor, selecione o perfil do usuário.',
+        confirmButtonColor: '#0d6efd'
+      });
+      return false;
+    }
+  });
+
+  // Função para mostrar informações do usuário
+  function showUserInfo(nome, cpf, role, primeiroAcesso) {
+    const cpfFormatado = `${cpf.slice(0,3)}.${cpf.slice(3,6)}.${cpf.slice(6,9)}-${cpf.slice(9)}`;
+    const statusAcesso = primeiroAcesso === 'True' ? 'Primeiro Acesso Pendente' : 'Acesso Normal';
+    
+    document.getElementById('userInfoBody').innerHTML = `
+      <div class="row">
+        <div class="col-12">
+          <p><strong>Nome:</strong> ${nome}</p>
+          <p><strong>CPF:</strong> ${cpfFormatado}</p>
+          <p><strong>Perfil:</strong> ${role.charAt(0).toUpperCase() + role.slice(1)}</p>
+          <p><strong>Status:</strong> ${statusAcesso}</p>
+          <p><strong>Senha Inicial:</strong> ${cpf.slice(0,3)}</p>
+        </div>
+      </div>
+    `;
+    
+    new bootstrap.Modal(document.getElementById('userInfoModal')).show();
+  }
+
+  // Função para resetar senha
+  function resetPassword(userId, nome, cpf) {
+    const senhaInicial = cpf.slice(0,3);
+    
+    Swal.fire({
+      title: 'Resetar Senha',
+      text: `Deseja resetar a senha de ${nome} para a senha inicial (${senhaInicial})?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sim, Resetar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#ffc107'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Create form and submit
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/usuarios/resetar-senha/${userId}`;
+        document.body.appendChild(form);
+        form.submit();
+      }
+    });
+  }
+
+  // Função para deletar usuário
+  function deleteUser(userId, nome) {
+    Swal.fire({
+      title: 'Confirmar Exclusão',
+      text: `Tem certeza que deseja excluir o usuário ${nome}?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sim, Excluir',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#dc3545'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Create form and submit
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/usuarios/excluir/${userId}`;
+        document.body.appendChild(form);
+        form.submit();
+      }
+    });
+  }
+</script>
+{% endblock %}

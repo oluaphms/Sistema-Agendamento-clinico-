@@ -1,0 +1,50 @@
+# Configurações Básicas
+SECRET_KEY=sua-chave-secreta-aqui
+DATABASE_URL=sqlite:///clinica.db
+
+# Configurações de Email
+MAIL_SERVER=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USE_TLS=true
+MAIL_USERNAME=seu-email@gmail.com
+MAIL_PASSWORD=sua-senha-de-app
+
+# Configurações de Redis
+REDIS_URL=redis://localhost:6379/0
+
+# Configurações de Celery
+CELERY_BROKER_URL=redis://localhost:6379/0
+CELERY_RESULT_BACKEND=redis://localhost:6379/0
+
+# Configurações de WhatsApp Business API
+WHATSAPP_API_KEY=sua-api-key-whatsapp
+WHATSAPP_PHONE_NUMBER_ID=seu-phone-number-id
+WHATSAPP_ACCESS_TOKEN=seu-access-token-whatsapp
+
+# Configurações do Google
+GOOGLE_CLIENT_ID=seu-google-client-id
+GOOGLE_CLIENT_SECRET=seu-google-client-secret
+GOOGLE_CALENDAR_ID=seu-calendar-id
+
+# Configurações da OpenAI
+OPENAI_API_KEY=sua-openai-api-key
+
+# Configurações do Twilio
+TWILIO_ACCOUNT_SID=seu-twilio-account-sid
+TWILIO_AUTH_TOKEN=seu-twilio-auth-token
+TWILIO_PHONE_NUMBER=seu-twilio-phone-number
+
+# Configurações de Pagamento
+STRIPE_SECRET_KEY=sua-stripe-secret-key
+STRIPE_PUBLISHABLE_KEY=sua-stripe-publishable-key
+MERCADOPAGO_ACCESS_TOKEN=seu-mercadopago-access-token
+
+# Configurações de Telemedicina
+OPENTOK_API_KEY=sua-opentok-api-key
+OPENTOK_API_SECRET=sua-opentok-api-secret
+
+# Configurações de Upload
+UPLOAD_FOLDER=uploads
+
+# Configurações de Segurança
+JWT_SECRET_KEY=sua-jwt-secret-key

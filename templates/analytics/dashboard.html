@@ -1,0 +1,352 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="analytics-dashboard">
+  <!-- Header com KPIs principais -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2><i class="bi bi-graph-up-arrow text-primary"></i> Dashboard Analytics</h2>
+        <div class="btn-group" role="group">
+          <button type="button" class="btn btn-outline-primary" id="btnHoje">Hoje</button>
+          <button type="button" class="btn btn-outline-primary active" id="btnUltimos7Dias">Últimos 7 dias</button>
+          <button type="button" class="btn btn-outline-primary" id="btnUltimos30Dias">Últimos 30 dias</button>
+          <button type="button" class="btn btn-outline-primary" id="btnPersonalizado">Personalizado</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros de período -->
+  <div class="row mb-4" id="filtrosPeriodo" style="display: none;">
+    <div class="col-md-6">
+      <label for="dataInicio" class="form-label">Data Início</label>
+      <input type="date" class="form-control" id="dataInicio">
+    </div>
+    <div class="col-md-6">
+      <label for="dataFim" class="form-label">Data Fim</label>
+      <input type="date" class="form-control" id="dataFim">
+    </div>
+  </div>
+
+  <!-- KPIs Principais -->
+  <div class="row mb-4">
+    <div class="col-md-3 mb-3">
+      <div class="card kpi-card bg-primary text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h6 class="card-title">Taxa de Presença</h6>
+              <h3 class="mb-0" id="kpiTaxaPresenca">--</h3>
+            </div>
+            <div class="kpi-icon">
+              <i class="bi bi-check-circle-fill fs-1"></i>
+            </div>
+          </div>
+          <small class="text-white-50">Últimos 30 dias</small>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+      <div class="card kpi-card bg-success text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h6 class="card-title">Consultas Realizadas</h6>
+              <h3 class="mb-0" id="kpiConsultasRealizadas">--</h3>
+            </div>
+            <div class="kpi-icon">
+              <i class="bi bi-calendar-check fs-1"></i>
+            </div>
+          </div>
+          <small class="text-white-50">Período selecionado</small>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+      <div class="card kpi-card bg-info text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h6 class="card-title">Faturamento</h6>
+              <h3 class="mb-0" id="kpiFaturamento">--</h3>
+            </div>
+            <div class="kpi-icon">
+              <i class="bi bi-currency-dollar fs-1"></i>
+            </div>
+          </div>
+          <small class="text-white-50">Período selecionado</small>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+      <div class="card kpi-card bg-warning text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h6 class="card-title">Pacientes Ativos</h6>
+              <h3 class="mb-0" id="kpiPacientesAtivos">--</h3>
+            </div>
+            <div class="kpi-icon">
+              <i class="bi bi-people-fill fs-1"></i>
+            </div>
+          </div>
+          <small class="text-white-50">Período selecionado</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gráficos Principais -->
+  <div class="row mb-4">
+    <div class="col-lg-8 mb-3">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-graph-up text-primary"></i> Taxa de Presença ao Longo do Tempo
+          </h5>
+        </div>
+        <div class="card-body">
+          <div id="graficoPresenca" style="height: 300px;"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-4 mb-3">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-pie-chart text-success"></i> Status dos Agendamentos
+          </h5>
+        </div>
+        <div class="card-body">
+          <div id="graficoStatus" style="height: 300px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-lg-6 mb-3">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-bar-chart text-info"></i> Consultas por Especialidade
+          </h5>
+        </div>
+        <div class="card-body">
+          <div id="graficoEspecialidade" style="height: 300px;"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-6 mb-3">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-trending-up text-warning"></i> Crescimento de Pacientes
+          </h5>
+        </div>
+        <div class="card-body">
+          <div id="graficoCrescimento" style="height: 300px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Receita por Profissional -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+              <i class="bi bi-person-badge text-primary"></i> Receita Mensal por Profissional
+            </h5>
+            <div class="btn-group" role="group">
+              <button type="button" class="btn btn-sm btn-outline-primary" id="btnMesAtual">Mês Atual</button>
+              <button type="button" class="btn btn-sm btn-outline-primary" id="btnMesAnterior">Mês Anterior</button>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="graficoReceita" style="height: 400px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Insights Automáticos -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+              <i class="bi bi-lightbulb text-warning"></i> Insights Automáticos
+            </h5>
+            <button type="button" class="btn btn-sm btn-outline-warning" id="btnGerarInsights">
+              <i class="bi bi-arrow-clockwise"></i> Gerar Insights
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="insightsContainer">
+            <div class="text-center text-muted py-4">
+              <i class="bi bi-lightbulb fs-1"></i>
+              <p class="mt-2">Clique em "Gerar Insights" para obter análises automáticas</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Previsões de IA -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+              <i class="bi bi-robot text-success"></i> Previsões de IA - Risco de Faltas
+            </h5>
+            <button type="button" class="btn btn-sm btn-outline-success" id="btnTreinarModelo">
+              <i class="bi bi-gear"></i> Treinar Modelo
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="previsoesContainer">
+            <div class="text-center text-muted py-4">
+              <i class="bi bi-robot fs-1"></i>
+              <p class="mt-2">Clique em "Treinar Modelo" para ativar as previsões de IA</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para detalhes -->
+<div class="modal fade" id="modalDetalhes" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Detalhes da Análise</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="modalDetalhesBody">
+        <!-- Conteúdo será carregado dinamicamente -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts específicos do analytics -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="/static/js/analytics.js"></script>
+
+<style>
+.analytics-dashboard {
+  padding: 1rem;
+}
+
+.kpi-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: none;
+  border-radius: 15px;
+}
+
+.kpi-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.kpi-icon {
+  opacity: 0.8;
+}
+
+.card {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+.card-header {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-bottom: 1px solid #dee2e6;
+  border-radius: 15px 15px 0 0 !important;
+}
+
+.btn-group .btn.active {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+.insight-card {
+  border-left: 4px solid;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+}
+
+.insight-card.prioridade-baixa {
+  border-left-color: #28a745;
+}
+
+.insight-card.prioridade-normal {
+  border-left-color: #ffc107;
+}
+
+.insight-card.prioridade-alta {
+  border-left-color: #fd7e14;
+}
+
+.insight-card.prioridade-critica {
+  border-left-color: #dc3545;
+}
+
+.previsao-card {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.nivel-risco-baixo {
+  border-left-color: #28a745;
+}
+
+.nivel-risco-medio {
+  border-left-color: #ffc107;
+}
+
+.nivel-risco-alto {
+  border-left-color: #dc3545;
+}
+
+/* Dark mode adjustments */
+[data-bs-theme="dark"] .card {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+[data-bs-theme="dark"] .card-header {
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--border-color) 100%);
+  border-bottom-color: var(--border-color);
+}
+</style>
+{% endblock %}

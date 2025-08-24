@@ -1,0 +1,399 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Dashboard Header -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <!-- Título removido -->
+      </div>
+      <div class="d-flex gap-2">
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Statistics Cards - Removidos -->
+
+<!-- Today's Schedule -->
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header bg-transparent border-0">
+        <div class="d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-calendar-day me-2 text-primary"></i>
+            Agenda de Hoje
+          </h5>
+          <span class="badge bg-primary fs-6">{{ proximos|length }} agendamentos</span>
+        </div>
+      </div>
+      <div class="card-body p-0 agenda-scroll" style="height: 500px; overflow-y: auto;">
+        {% if proximos %}
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th class="border-0">Hora</th>
+                <th class="border-0">Paciente</th>
+                <th class="border-0">Profissional</th>
+                <th class="border-0">Serviço</th>
+                <th class="border-0">Status</th>
+                <th class="border-0">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for a in proximos %}
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <i class="bi bi-clock text-primary me-2"></i>
+                    <strong>{{ a.hora }}</strong>
+                  </div>
+                </td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="bg-primary bg-gradient rounded-circle p-2 me-2">
+                      <i class="bi bi-person text-white"></i>
+                    </div>
+                    <span>{{ a.paciente.nome }}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge bg-info bg-opacity-10 text-info">
+                    <i class="bi bi-person-badge me-1"></i>
+                    {{ a.profissional.nome }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge bg-secondary bg-opacity-10 text-secondary">
+                    <i class="bi bi-tools me-1"></i>
+                    {{ a.servico.nome }}
+                  </span>
+                </td>
+                <td>
+                  {% if a.status == 'Confirmado' %}
+                    <span class="badge bg-success">
+                      <i class="bi bi-check-circle me-1"></i>{{ a.status }}
+                    </span>
+                  {% elif a.status == 'Agendado' %}
+                    <span class="badge bg-warning">
+                      <i class="bi bi-clock me-1"></i>{{ a.status }}
+                    </span>
+                  {% elif a.status == 'Cancelado' %}
+                    <span class="badge bg-danger">
+                      <i class="bi bi-x-circle me-1"></i>{{ a.status }}
+                    </span>
+                  {% else %}
+                    <span class="badge bg-secondary">{{ a.status }}</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-primary edit-btn" title="Editar" data-ag-id="{{ a.id }}">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-outline-success confirm-btn" title="Confirmar" data-ag-id="{{ a.id }}">
+                      <i class="bi bi-check-lg"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+          <i class="bi bi-calendar-x text-muted" style="font-size: 4rem;"></i>
+          <h5 class="text-muted mt-3">Sem agendamentos hoje</h5>
+          <p class="text-muted">Que tal agendar uma nova consulta?</p>          
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-lg-4">
+    <!-- Recent Activity -->
+    <div class="card mb-4">
+      <div class="card-header bg-transparent border-0">
+        <h5 class="card-title mb-0">
+          <i class="bi bi-activity me-2 text-success"></i>
+          Atividade Recente
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-marker bg-primary"></div>
+            <div class="timeline-content">
+              <h6 class="mb-1">Sistema Ativo</h6>
+              <small class="text-muted">Há alguns minutos</small>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-marker bg-success"></div>
+            <div class="timeline-content">
+              <h6 class="mb-1">Dashboard Carregado</h6>
+              <small class="text-muted">Há alguns segundos</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Quick Stats -->
+    <div class="card">
+      <div class="card-header bg-transparent border-0">
+        <h5 class="card-title mb-0">
+          <i class="bi bi-graph-up me-2 text-info"></i>
+          Estatísticas Rápidas
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span>Taxa de Confirmação</span>
+          <span class="badge bg-success">{{ taxa_confirmacao }}%</span>
+        </div>
+        <div class="progress mb-3" style="height: 8px;">
+          <div class="progress-bar bg-success" style="width: {{ taxa_confirmacao }}%"></div>
+        </div>
+        
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span>Pacientes Ativos</span>
+          <span class="badge bg-primary">{{ pacientes_ativos }}</span>
+        </div>
+        <div class="progress mb-3" style="height: 8px;">
+          <div class="progress-bar bg-primary" style="width: {{ (pacientes_ativos / 200 * 100) if pacientes_ativos > 0 else 0 }}%"></div>
+        </div>
+        
+        <div class="d-flex justify-content-between align-items-center">
+          <span>Consultas/Mês</span>
+          <span class="badge bg-info">{{ consultas_mes }}</span>
+        </div>
+        <div class="progress" style="height: 8px;">
+          <div class="progress-bar bg-info" style="width: {{ (consultas_mes / 500 * 100) if consultas_mes > 0 else 0 }}%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Custom CSS for Timeline and Agenda Scroll -->
+<style>
+.timeline {
+  position: relative;
+  padding-left: 2rem;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 0.5rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--border-color);
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.timeline-marker {
+  position: absolute;
+  left: -1.5rem;
+  top: 0.25rem;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  border: 3px solid var(--bg-primary);
+}
+
+.timeline-content {
+  padding-left: 0.5rem;
+}
+
+.timeline-content h6 {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.timeline-content small {
+  font-size: 0.75rem;
+}
+
+/* Custom scrollbar for agenda */
+.agenda-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.agenda-scroll::-webkit-scrollbar-track {
+  background: #f8f9fa;
+  border-radius: 10px;
+  border: 1px solid #e9ecef;
+}
+
+.agenda-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  border: 1px solid #ffffff;
+}
+
+.agenda-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #0056b3, #004085);
+  transform: scale(1.1);
+}
+
+.agenda-scroll::-webkit-scrollbar-corner {
+  background: #f8f9fa;
+}
+
+/* Firefox scrollbar */
+.agenda-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #007bff #f8f9fa;
+}
+
+/* Smooth scrolling */
+.agenda-scroll {
+  scroll-behavior: smooth;
+}
+
+/* Hover effect no container */
+.agenda-scroll:hover::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #0056b3, #007bff);
+}
+
+/* Header fixo durante scroll */
+.table thead th {
+  position: sticky;
+  top: 0;
+  background: linear-gradient(135deg, var(--primary-color) 0%, #0056b3 100%);
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Indicador de scroll */
+.agenda-scroll::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: linear-gradient(transparent, rgba(248, 249, 250, 0.8));
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.agenda-scroll.has-scroll::after {
+  opacity: 1;
+}
+
+/* Melhorar responsividade da tabela */
+@media (max-width: 768px) {
+  .agenda-scroll {
+    height: 400px !important;
+  }
+  
+  .table thead th {
+    font-size: 0.875rem;
+    padding: 0.5rem;
+  }
+  
+  .table tbody td {
+    font-size: 0.875rem;
+    padding: 0.5rem;
+  }
+}
+</style>
+{% endblock %}
+
+
+
+{% block scripts %}
+<script>
+// Confirmar Agendamento
+function confirmarAgendamento(id) {
+  Swal.fire({
+    title: 'Confirmar Agendamento?',
+    text: 'Deseja confirmar este agendamento?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#198754',
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: 'Sim, Confirmar!',
+    cancelButtonText: 'Cancelar'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Aqui você pode implementar a lógica para confirmar
+      showToast('Agendamento confirmado com sucesso!', 'success');
+    }
+  });
+}
+
+
+
+// Auto-refresh dashboard every 30 seconds
+setInterval(() => {
+  // You can implement auto-refresh logic here
+  // For now, just show a subtle notification
+  console.log('Dashboard auto-refresh check');
+}, 30000);
+
+// Show welcome toast on page load
+document.addEventListener('DOMContentLoaded', function() {
+  // Verificar se há conteúdo para rolar na agenda
+  checkScrollIndicator();
+});
+
+// Função para verificar se há conteúdo para rolar
+function checkScrollIndicator() {
+  const agendaScroll = document.querySelector('.agenda-scroll');
+  if (agendaScroll) {
+    const hasVerticalScroll = agendaScroll.scrollHeight > agendaScroll.clientHeight;
+    
+    if (hasVerticalScroll) {
+      agendaScroll.classList.add('has-scroll');
+      
+      // Adicionar listener para remover indicador quando chegar ao final
+      agendaScroll.addEventListener('scroll', function() {
+        const isAtBottom = this.scrollTop + this.clientHeight >= this.scrollHeight - 5;
+        if (isAtBottom) {
+          this.classList.remove('has-scroll');
+        } else {
+          this.classList.add('has-scroll');
+        }
+      });
+    }
+  }
+}
+
+// Event listeners para botões da agenda
+document.addEventListener('DOMContentLoaded', function() {
+  // Botões de editar
+  document.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const agId = this.getAttribute('data-ag-id');
+      window.location.href = `/editar-agendamento/${agId}`;
+    });
+  });
+  
+  // Botões de confirmar
+  document.querySelectorAll('.confirm-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const agId = this.getAttribute('data-ag-id');
+      confirmarAgendamento(agId);
+    });
+  });
+});
+</script>
+{% endblock %}

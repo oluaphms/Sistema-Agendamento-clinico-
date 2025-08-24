@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste das Funções da Agenda</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Teste das Funções da Agenda</h1>
+        <p>Este arquivo testa se as funções do agenda.js estão funcionando corretamente.</p>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <h3>Teste de Funções Básicas</h3>
+                <button class="btn btn-primary mb-2" onclick="testShowQuickAppointment()">Testar showQuickAppointment</button><br>
+                <button class="btn btn-secondary mb-2" onclick="testToggleView()">Testar toggleView</button><br>
+                <button class="btn btn-info mb-2" onclick="testApplyFilters()">Testar applyFilters</button><br>
+                <button class="btn btn-success mb-2" onclick="testExportAgenda()">Testar exportAgenda</button>
+            </div>
+            
+            <div class="col-md-6">
+                <h3>Teste de Funções de Agendamento</h3>
+                <button class="btn btn-warning mb-2" onclick="testEditAppointment()">Testar editAppointment</button><br>
+                <button class="btn btn-success mb-2" onclick="testConfirmAppointment()">Testar confirmAppointment</button><br>
+                <button class="btn btn-info mb-2" onclick="testRescheduleAppointment()">Testar rescheduleAppointment</button><br>
+                <button class="btn btn-danger mb-2" onclick="testCancelAppointment()">Testar cancelAppointment</button>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <h3>Log de Testes</h3>
+                <div id="testLog" class="border p-3 bg-light" style="height: 300px; overflow-y: auto;">
+                    <p>Log de testes aparecerá aqui...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/agenda.js"></script>
+    
+    <script>
+        function log(message) {
+            const logDiv = document.getElementById('testLog');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `<p>[${timestamp}] ${message}</p>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function testShowQuickAppointment() {
+            try {
+                log('Testando showQuickAppointment...');
+                if (typeof showQuickAppointment === 'function') {
+                    showQuickAppointment();
+                    log('✅ showQuickAppointment executada com sucesso');
+                } else {
+                    log('❌ showQuickAppointment não está definida');
+                }
+            } catch (error) {
+                log(`❌ Erro ao executar showQuickAppointment: ${error.message}`);
+            }
+        }
+        
+        function testToggleView() {
+            try {
+                log('Testando toggleView...');
+                if (typeof toggleView === 'function') {
+                    toggleView('test');
+                    log('✅ toggleView executada com sucesso');
+                } else {
+                    log('❌ toggleView não está definida');
+                }
+            } catch (error) {
+                log(`❌ Erro ao executar toggleView: ${error.message}`);
+            }
+        }
+        
+        function testApplyFilters() {
+            try {
+                log('Testando applyFilters...');
+                if (typeof applyFilters === 'function') {
+                    applyFilters();
+                    log('✅ applyFilters executada com sucesso');
+                } else {
+                    log('❌ applyFilters não está definida');
+                }
+            } catch (error) {
+                log(`❌ Erro ao executar applyFilters: ${error.message}`);
+            }
+        }
+        
+        function testExportAgenda() {
+            try {
+                log('Testando exportAgenda...');
+                if (typeof exportAgenda === 'function') {
+                    exportAgenda();
+                    log('✅ exportAgenda executada com sucesso');
+                } else {
+                    log('❌ exportAgenda não está definida');
+                }
+            } catch (error) {
+                log(`❌ Erro ao executar exportAgenda: ${error.message}`);
+            }
+        }
+        
+        function testEditAppointment() {
+            try {
+                log('Testando editAppointment...');
+                if (typeof editAppointment === 'function') {
+                    editAppointment(123);
+                    log('✅ editAppointment executada com sucesso');
+                } else {
+                    log('❌ editAppointment não está definida');
+                }
+            } catch (error) {
+                log(`❌ Erro ao executar editAppointment: ${error.message}`);
+            }
+        }
+        
+        function testConfirmAppointment() {
+            try {
+                log('Testando confirmAppointment...');
+                if (typeof confirmAppointment === 'function') {
+                    confirmAppointment(123);
+                    log('✅ confirmAppointment executada com sucesso');
+                } else {
+                    log('❌ confirmAppointment não está definida');
+                }
+            } catch (error) {
+                log(`❌ Erro ao executar confirmAppointment: ${error.message}`);
+            }
+        }
+        
+        function testRescheduleAppointment() {
+            try {
+                log('Testando rescheduleAppointment...');
+                if (typeof rescheduleAppointment === 'function') {
+                    rescheduleAppointment(123);
+                    log('✅ rescheduleAppointment executada com sucesso');
+                } else {
+                    log('❌ rescheduleAppointment não está definida');
+                }
+            } catch (error) {
+                log(`❌ Erro ao executar rescheduleAppointment: ${error.message}`);
+            }
+        }
+        
+        function testCancelAppointment() {
+            try {
+                log('Testando cancelAppointment...');
+                if (typeof cancelAppointment === 'function') {
+                    cancelAppointment(123);
+                    log('✅ cancelAppointment executada com sucesso');
+                } else {
+                    log('❌ cancelAppointment não está definida');
+                }
+            } catch (error) {
+                log(`❌ Erro ao executar cancelAppointment: ${error.message}`);
+            }
+        }
+        
+        // Verificação automática ao carregar a página
+        window.addEventListener('load', function() {
+            log('=== VERIFICAÇÃO INICIAL DAS FUNÇÕES ===');
+            
+            const functions = [
+                'showQuickAppointment', 'toggleView', 'applyFilters', 'exportAgenda',
+                'showBulkActions', 'editAppointment', 'confirmAppointment', 
+                'rescheduleAppointment', 'cancelAppointment', 'toggleSelectAll',
+                'bulkConfirm', 'bulkCancel', 'bulkReschedule', 'bulkExport',
+                'filterPatientOptions', 'loadAvailableSlots', 'updateDuration',
+                'toggleRecurringOptions', 'saveAppointment', 'showNewPatientModal', 'saveNewPatient'
+            ];
+            
+            let allDefined = true;
+            functions.forEach(funcName => {
+                if (typeof window[funcName] === 'function') {
+                    log(`✅ ${funcName}: OK`);
+                } else {
+                    log(`❌ ${funcName}: NÃO DEFINIDA`);
+                    allDefined = false;
+                }
+            });
+            
+            if (allDefined) {
+                log('🎉 TODAS AS FUNÇÕES ESTÃO DEFINIDAS E FUNCIONANDO!');
+            } else {
+                log('⚠️ ALGUMAS FUNÇÕES NÃO ESTÃO DEFINIDAS');
+            }
+            
+            log('=== FIM DA VERIFICAÇÃO ===');
+        });
+    </script>
+</body>
+</html>
